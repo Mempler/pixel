@@ -1,0 +1,12 @@
+[package]
+name = "app"
+version = "0.1.0"
+authors = ["Robin A. P. <me@mempler.de>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# NOTE: we have to include the fmod logo in our final game as splash screen!
+audio_engine = { path = "../components/audio_engine" }
+graphics_engine = { path = "../components/graphics_engine" }

@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "app",
+
+    "components/audio_engine",
+    "components/graphics_engine"
+]

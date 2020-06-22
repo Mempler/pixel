@@ -1,5 +1,5 @@
 #[cfg(feature = "audio_fmod")]
-use rfmod::{Sound, Channel, TimeUnit, TIMEUNIT_MS, Dsp};
+use rfmod::{Sound, Channel, TIMEUNIT_MS};
 
 pub struct Audio {
     #[cfg(feature = "audio_fmod")]

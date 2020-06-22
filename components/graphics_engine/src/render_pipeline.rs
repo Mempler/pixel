@@ -1,11 +1,10 @@
 use sdl2::Sdl;
 
 use std::time::{Duration, Instant};
-use std::thread::{sleep, Thread};
+use std::thread::sleep;
 use sdl2::video::Window;
-use sdl2::render::{Canvas, WindowCanvas, CanvasBuilder};
-use sdl2::event::{Event, EventPollIterator};
-use sdl2::keyboard::Keycode;
+use sdl2::render::WindowCanvas;
+use sdl2::event::Event;
 use std::ops::Sub;
 
 // each project has one pipeline.
@@ -18,6 +17,8 @@ pub struct RenderPipeline {
     cap: FPSCap
 }
 
+#[derive(Copy, Clone, Debug)]
+#[allow(dead_code)]
 pub enum FPSCap {
     Hz30  = 30,  // Android
     Hz60  = 60,  // Most common
@@ -65,7 +66,7 @@ impl RenderPipeline {
         where
             F: Fn(Instant, &RenderPipeline) -> bool // true = Exit loop, false = continue
     {
-        let mut delta = Instant::now();
+        let mut delta;
         let mut event_pump = self.sdl.event_pump().unwrap();
 
         // Show our window

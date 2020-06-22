@@ -44,6 +44,7 @@ impl AudioSystem {
     }
 
     // TODO: implement
+    #[allow(dead_code, unused_variables)]
     pub fn from_memory(&self, buf: &[u8]) -> Audio {
         #[cfg(feature = "audio_fmod")]
         unimplemented!("Not implemented for FMOD!");

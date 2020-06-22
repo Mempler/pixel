@@ -16,10 +16,7 @@ fn main() {
                 )
         }).expect("Failed to set activity");
     });
-
-
-
-
+    
     // a render pipeline should be passed to child components
     let mut pipeline = RenderPipeline::new("Project Pixel", 800, 600);
     // let audio_system = AudioSystem::new();

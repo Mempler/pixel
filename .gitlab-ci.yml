@@ -1,0 +1,16 @@
+image: "rust:stretch"
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq libsdl2-dev libsdl2-image-dev
+
+compile_debug:
+  script:
+    - cargo build
+
+compile_release:
+  script:
+    - cargo build --release
+
+test:
+  script:
+    - cargo test

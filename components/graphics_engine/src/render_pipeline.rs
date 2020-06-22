@@ -61,10 +61,6 @@ impl RenderPipeline {
         &mut self.canvas
     }
 
-    pub fn draw_image(&mut self) {
-        self.get_window_canvas_mut().draw
-    }
-
     pub fn run<F>(&mut self, f: F)
         where
             F: Fn(Instant, &RenderPipeline) -> bool // true = Exit loop, false = continue

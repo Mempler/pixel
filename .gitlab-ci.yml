@@ -25,6 +25,6 @@ compile_release:
   script:
     - cargo build --release
 
-test:
-  script:
-    - cargo test
+#test:
+#  script:
+#    - cargo test

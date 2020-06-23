@@ -353,7 +353,7 @@ impl Event {
     }
 }
 
-type HandlerPtr = Box<dyn FnMut(&Event)>;
+type HandlerPtr = Box<dyn Sync + FnMut(&Event)>;
 
 pub struct EventPipeline {
     event_handlers: Vec<HandlerPtr>,
@@ -386,7 +386,7 @@ impl EventPipeline {
     ///     }
     /// });
     /// ```
-    pub fn register_handler<F: 'static + Fn(&Event)>(&mut self, handler: F) {
+    pub fn register_handler<F: 'static + Sync + Fn(&Event)>(&mut self, handler: F) {
         self.event_handlers.push(Box::new(handler));
     }
 
@@ -404,7 +404,7 @@ impl EventPipeline {
     }
 
     // This gets called every end of frame
-    pub fn finish(&mut self) {
+    pub fn flush(&mut self) {
         self.event_queue.clear();
     }
 }

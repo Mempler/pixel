@@ -96,9 +96,9 @@ impl RenderPipeline {
         self.get_window_canvas_mut().clear();
         self.get_window_canvas_mut().present();
 
-        loop {
-            delta = Instant::now();
+        delta = Instant::now();
 
+        loop {
             { // Update Frame
                 // TODO: somehow pass this down the line
                 let events = event_pump.poll_iter();
@@ -136,6 +136,8 @@ impl RenderPipeline {
                 FPSCap::Hz240 => sleep(delta.sub(Duration::from_millis(4)).elapsed()),
                 FPSCap::Unlimited => {} // dont sleep at all
             };
+
+            delta = Instant::now();
         }
     }
 }

@@ -1,5 +1,11 @@
 image: "archlinux:latest"
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - target/
+
+
 before_script:
   - pacman -Syy --noconfirm rustup git sdl2 sdl2_image wget cmake base-devel
   - rustup default nightly

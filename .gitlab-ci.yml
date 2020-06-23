@@ -1,7 +1,15 @@
-image: "rust:stretch"
+image: "archlinux:latest"
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq libsdl2-dev libsdl2-image-dev
+  - pacman -Syy --noconfirm rustup git sdl2 sdl2_image wget cmake base-devel
+  - rustup default nightly
+  - wget https://zdoom.org/files/fmod/fmodapi44464linux.tar.gz
+  - tar -xf fmodapi44464linux.tar.gz && rm fmodapi44464linux.tar.gz
+  - mkdir -p /usr/lib /usr/include/fmodex
+  - cp -d fmodapi44464linux/api/lib/* /usr/lib/
+  - ln -sf /usr/lib/libfmodex64-4.44.64.so /usr/lib/libfmodex-4.44.64.so && ln -sf /usr/lib/libfmodexL64-4.44.64.so /usr/lib/libfmodexL-4.44.64.so
+
+
 
 compile_debug:
   script:

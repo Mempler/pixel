@@ -11,7 +11,11 @@ edition = "2018"
 audio_engine = { path = "../components/audio_engine" }
 graphics_engine = { path = "../components/graphics_engine" }
 event_pipeline = { path = "../components/event_pipeline" }
+assets_pipeline = { path = "../components/assets_pipeline" }
+
 discord-rpc-client = "0.3.0"
+lazy_static = "1.4.0"
+parking_lot = "0.11.0"
 
 [build-dependencies]
 assets_pipeline = { path = "../components/assets_pipeline" }

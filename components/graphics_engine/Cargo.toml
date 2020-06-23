@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 sdl2 = { version="0.34.1", features = ["image"], default-features = false }
 event_pipeline = { path = "../event_pipeline" }
+
+gl = "0.14.0"

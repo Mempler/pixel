@@ -7,6 +7,7 @@ use sdl2::render::WindowCanvas;
 use std::ops::Sub;
 use event_pipeline::EventPipeline;
 
+
 // each project has one pipeline.
 // multiple can cause bugs.
 // a pipeline is thread safe!
@@ -15,7 +16,11 @@ pub struct RenderPipeline {
     canvas: WindowCanvas,
 
     cap: FPSCap,
+
+    render_callbacks: Vec<HandlerPtr>
 }
+
+type HandlerPtr = Box<dyn Fn(&Instant)>;
 
 #[derive(Copy, Clone, Debug)]
 #[allow(dead_code)]
@@ -37,15 +42,19 @@ impl RenderPipeline {
         // Create a window at *new() time*
         let window = video_subsystem.window(title, width, height)
             .position_centered()
+            .opengl()
             .hidden()
             .build()
             .unwrap();
+
+        gl::load_with(|s| sdl.video().unwrap().gl_get_proc_address(s) as _); // load GL context
 
         RenderPipeline {
             sdl,
             canvas: window.into_canvas().build().unwrap(),
 
             cap: FPSCap::Hz60, // 60 FPS by default
+            render_callbacks: vec![]
         }
     }
 
@@ -61,10 +70,21 @@ impl RenderPipeline {
     pub fn get_window_canvas_mut(&mut self) -> &mut WindowCanvas {
         &mut self.canvas
     }
+    pub fn get_sdl(&self) -> &Sdl {
+        &self.sdl
+    }
+    pub fn get_sdl_mut(&mut self) -> &mut Sdl {
+        &mut self.sdl
+    }
+
+    pub fn register_renderer<F: 'static + Fn(&Instant)>(&mut self, f: F)
+    {
+        self.render_callbacks.push(Box::new(f));
+    }
 
     pub fn run<F>(&mut self, ev_pipeline: &mut EventPipeline, f: F) -> !
         where
-            F: Fn(Instant, &RenderPipeline) -> bool // true = Exit loop, false = continue
+            F: Fn(&Instant, &mut RenderPipeline) -> bool // true = Exit loop, false = continue
     {
         let mut delta;
         let mut event_pump = self.sdl.event_pump().unwrap();
@@ -79,19 +99,33 @@ impl RenderPipeline {
         loop {
             delta = Instant::now();
 
-            // TODO: somehow pass this down the line
-            let events = event_pump.poll_iter();
+            { // Update Frame
+                // TODO: somehow pass this down the line
+                let events = event_pump.poll_iter();
+                for event in events {
+                    ev_pipeline.push_event(event_pipeline::Event::from_sdl2_event(event));
+                }
 
-            for event in events {
-                ev_pipeline.push_event(event_pipeline::Event::from_sdl2_event(event));
+                // Updater
+                f(&delta, self);
+
+                // Flush events
+                ev_pipeline.handle();
+                ev_pipeline.flush();
             }
 
-            f(delta, self);
+            { // Render Frame
+                unsafe {
+                    gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+                    gl::Clear(gl::COLOR_BUFFER_BIT);
+                }
 
-            self.get_window_canvas_mut().present();
+                for render_callback in &self.render_callbacks {
+                    render_callback(&delta);
+                }
 
-            ev_pipeline.handle();
-            ev_pipeline.finish();
+                self.get_window_canvas_mut().present();
+            }
 
             match &self.cap {
                 FPSCap::Hz30  => sleep(delta.sub(Duration::from_millis(33)).elapsed()),

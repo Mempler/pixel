@@ -4,8 +4,8 @@ use std::time::{Duration, Instant};
 use std::thread::sleep;
 use sdl2::video::Window;
 use sdl2::render::WindowCanvas;
-use sdl2::event::Event;
 use std::ops::Sub;
+use event_pipeline::EventPipeline;
 
 // each project has one pipeline.
 // multiple can cause bugs.
@@ -14,7 +14,7 @@ pub struct RenderPipeline {
     sdl: Sdl,
     canvas: WindowCanvas,
 
-    cap: FPSCap
+    cap: FPSCap,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -45,7 +45,7 @@ impl RenderPipeline {
             sdl,
             canvas: window.into_canvas().build().unwrap(),
 
-            cap: FPSCap::Hz60 // 60 FPS by default
+            cap: FPSCap::Hz60, // 60 FPS by default
         }
     }
 
@@ -62,7 +62,7 @@ impl RenderPipeline {
         &mut self.canvas
     }
 
-    pub fn run<F>(&mut self, f: F)
+    pub fn run<F>(&mut self, ev_pipeline: &mut EventPipeline, f: F) -> !
         where
             F: Fn(Instant, &RenderPipeline) -> bool // true = Exit loop, false = continue
     {
@@ -76,22 +76,22 @@ impl RenderPipeline {
         self.get_window_canvas_mut().clear();
         self.get_window_canvas_mut().present();
 
-        'running: loop {
+        loop {
             delta = Instant::now();
 
             // TODO: somehow pass this down the line
             let events = event_pump.poll_iter();
 
-            for event in events { // handle internal events
-                match event {
-                    Event::Quit{ timestamp: _ } => break 'running,
-                    _ => {}
-                }
+            for event in events {
+                ev_pipeline.push_event(event_pipeline::Event::from_sdl2_event(event));
             }
 
             f(delta, self);
 
             self.get_window_canvas_mut().present();
+
+            ev_pipeline.handle();
+            ev_pipeline.finish();
 
             match &self.cap {
                 FPSCap::Hz30  => sleep(delta.sub(Duration::from_millis(33)).elapsed()),

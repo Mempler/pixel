@@ -10,6 +10,7 @@ edition = "2018"
 # NOTE: we have to include the fmod logo in our final game as splash screen!
 audio_engine = { path = "../components/audio_engine" }
 graphics_engine = { path = "../components/graphics_engine" }
+event_pipeline = { path = "../components/event_pipeline" }
 discord-rpc-client = "0.3.0"
 
 [build-dependencies]

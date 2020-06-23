@@ -118,7 +118,7 @@ impl PxlGame {
     }
 
     // Renderer for rendering children
-    fn render(&mut self, delta: &Instant) {
+    fn render(&mut self, _delta: &Instant) {
 
     }
 }

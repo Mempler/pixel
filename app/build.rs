@@ -1,7 +1,12 @@
 use assets_pipeline::AssetPipeline;
 use std::io::Write;
+use std::env;
 
 pub fn main() {
+    if let Ok(profile) = env::var("PROFILE") {
+        println!("cargo:rustc-cfg=build={:?}", profile);
+    }
+
     println!("cargo:rerun-if-changed=assets/"); // rerun if assets/ changes
 
     // do NOT use ./assets otherwise it would simply break

@@ -1,4 +1,4 @@
-use sdl2::Sdl;
+use sdl2::{Sdl, VideoSubsystem};
 
 use std::time::{Duration, Instant};
 use std::thread::sleep;
@@ -6,18 +6,30 @@ use sdl2::video::Window;
 use sdl2::render::WindowCanvas;
 use std::ops::Sub;
 use event_pipeline::EventPipeline;
-
+#[cfg(build = "debug")]
+use crate::imgui_wrapper::ImGui;
+#[cfg(build = "debug")]
+use imgui::Ui;
+#[cfg(build = "debug")]
+use std::ffi::c_void;
 
 // each project has one pipeline.
 // multiple can cause bugs.
 // a pipeline is thread safe!
 pub struct RenderPipeline {
     sdl: Sdl,
+    sdl_video: VideoSubsystem,
+
     canvas: WindowCanvas,
 
     cap: FPSCap,
 
-    render_callbacks: Vec<HandlerPtr>
+    render_callbacks: Vec<HandlerPtr>,
+
+    #[cfg(build = "debug")]
+    imgui: Option<ImGui>,
+    #[cfg(build = "debug")]
+    imgui_frame: Option<*mut c_void>
 }
 
 type HandlerPtr = Box<dyn Fn(&Instant)>;
@@ -47,14 +59,23 @@ impl RenderPipeline {
             .build()
             .unwrap();
 
-        gl::load_with(|s| sdl.video().unwrap().gl_get_proc_address(s) as _); // load GL context
+        let video = sdl.video().unwrap();
+        gl::load_with(|s| video.gl_get_proc_address(s) as _); // load GL context
+
+        let canvas = window.into_canvas().build().unwrap();
 
         RenderPipeline {
             sdl,
-            canvas: window.into_canvas().build().unwrap(),
+            sdl_video: video,
+            canvas,
 
             cap: FPSCap::Hz60, // 60 FPS by default
-            render_callbacks: vec![]
+            render_callbacks: vec![],
+
+            #[cfg(build = "debug")]
+            imgui: None,
+            #[cfg(build = "debug")]
+            imgui_frame: None
         }
     }
 
@@ -76,16 +97,35 @@ impl RenderPipeline {
     pub fn get_sdl_mut(&mut self) -> &mut Sdl {
         &mut self.sdl
     }
+    pub fn get_sdl_video(&self) -> &VideoSubsystem {
+        &self.sdl_video
+    }
+    pub fn get_sdl_video_mut(&mut self) -> &mut VideoSubsystem {
+        &mut self.sdl_video
+    }
 
     pub fn register_renderer<F: 'static + Fn(&Instant)>(&mut self, f: F)
     {
         self.render_callbacks.push(Box::new(f));
     }
 
+    #[cfg(build = "debug")]
+    pub fn get_imgui_ui(&mut self) -> Option<&mut Ui> {
+        match self.imgui_frame {
+            Some(ptr) => unsafe { Some(&mut *(ptr as *mut Ui)) },
+            None => None
+        }
+    }
+
     pub fn run<F>(&mut self, ev_pipeline: &mut EventPipeline, f: F) -> !
         where
             F: Fn(&Instant, &mut RenderPipeline) -> bool // true = Exit loop, false = continue
     {
+        #[cfg(build = "debug")]
+        {
+            self.imgui = Some(ImGui::new(self.get_sdl_video(), self.get_window()));
+        }
+
         let mut delta;
         let mut event_pump = self.sdl.event_pump().unwrap();
 
@@ -99,11 +139,33 @@ impl RenderPipeline {
         delta = Instant::now();
 
         loop {
+            #[cfg(build = "debug")]
+            let mut ui_box: Box<Ui>;
+
             { // Update Frame
                 // TODO: somehow pass this down the line
                 let events = event_pump.poll_iter();
                 for event in events {
+                    #[cfg(build = "debug")]
+                    unsafe { // ya dirty hacker Mempler is here! lets bypass some of rusts safety features
+                        let imgui = self.imgui.as_mut().unwrap().imgui();
+                        let imgui_sdl2 = self.imgui.as_mut().unwrap().imgui_sdl2();
+                        if (*imgui_sdl2).ignore_event(&event) {
+                            continue;
+                        }
+                        (*imgui_sdl2).handle_event(&mut *imgui, &event);
+                    }
                     ev_pipeline.push_event(event_pipeline::Event::from_sdl2_event(event));
+                }
+
+                #[cfg(build = "debug")]
+                unsafe {
+                    let render = self as *const RenderPipeline;
+                    let imgui = self.imgui.as_mut().unwrap() as *mut ImGui;
+                    let ui = (*imgui).ui((*render).get_window(), &event_pump.mouse_state());
+
+                    ui_box = Box::new(ui);
+                    self.imgui_frame = Some(ui_box.as_mut() as *mut Ui as *mut c_void);
                 }
 
                 // Updater
@@ -118,6 +180,23 @@ impl RenderPipeline {
                 unsafe {
                     gl::ClearColor(0.2, 0.2, 0.2, 1.0);
                     gl::Clear(gl::COLOR_BUFFER_BIT);
+                }
+
+                // NOTICE: this is so bad... too bad!
+                // This is non production code anyway ¯\_(ツ)_/¯
+                #[cfg(build = "debug")]
+                unsafe {
+                    let render = self as *const RenderPipeline;
+
+                    let imgui = self.imgui.as_mut().unwrap();
+
+                    let imgui_sdl2 = imgui.imgui_sdl2();
+                    let imgui_renderer = imgui.imgui_renderer();
+
+                    (*imgui_sdl2).prepare_render(ui_box.as_ref(), (*render).get_window());
+                    (*imgui_renderer).render(*ui_box);
+
+                    self.imgui_frame = None;
                 }
 
                 for render_callback in &self.render_callbacks {

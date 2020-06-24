@@ -4,7 +4,6 @@ use std::time::{Duration, Instant};
 use std::thread::sleep;
 use sdl2::video::Window;
 use sdl2::render::WindowCanvas;
-use std::ops::Sub;
 use event_pipeline::EventPipeline;
 #[cfg(build = "debug")]
 use crate::imgui_wrapper::ImGui;
@@ -32,7 +31,7 @@ pub struct RenderPipeline {
     imgui_frame: Option<*mut c_void>
 }
 
-type HandlerPtr = Box<dyn Fn(&Instant)>;
+type HandlerPtr = Box<dyn Fn(&Duration)>;
 
 #[derive(Copy, Clone, Debug)]
 #[allow(dead_code)]
@@ -104,7 +103,7 @@ impl RenderPipeline {
         &mut self.sdl_video
     }
 
-    pub fn register_renderer<F: 'static + Fn(&Instant)>(&mut self, f: F)
+    pub fn register_renderer<F: 'static + Fn(&Duration)>(&mut self, f: F)
     {
         self.render_callbacks.push(Box::new(f));
     }
@@ -119,14 +118,13 @@ impl RenderPipeline {
 
     pub fn run<F>(&mut self, ev_pipeline: &mut EventPipeline, f: F) -> !
         where
-            F: Fn(&Instant, &mut RenderPipeline) -> bool // true = Exit loop, false = continue
+            F: Fn(&Duration, &mut RenderPipeline) -> bool // true = Exit loop, false = continue
     {
         #[cfg(build = "debug")]
         {
             self.imgui = Some(ImGui::new(self.get_sdl_video(), self.get_window()));
         }
 
-        let mut delta;
         let mut event_pump = self.sdl.event_pump().unwrap();
 
         // Show our window
@@ -136,9 +134,11 @@ impl RenderPipeline {
         self.get_window_canvas_mut().clear();
         self.get_window_canvas_mut().present();
 
-        delta = Instant::now();
+        let mut delta = Duration::new(0,0);
 
         loop {
+            let frame_start = Instant::now();
+
             #[cfg(build = "debug")]
             let mut ui_box: Box<Ui>;
 
@@ -162,6 +162,11 @@ impl RenderPipeline {
                 unsafe {
                     let render = self as *const RenderPipeline;
                     let imgui = self.imgui.as_mut().unwrap() as *mut ImGui;
+
+                    let delta_s = delta.as_secs_f32();
+                    (*(*imgui).imgui()).io_mut()
+                        .delta_time = delta_s;
+
                     let ui = (*imgui).ui((*render).get_window(), &event_pump.mouse_state());
 
                     ui_box = Box::new(ui);
@@ -206,17 +211,24 @@ impl RenderPipeline {
                 self.get_window_canvas_mut().present();
             }
 
-            match &self.cap {
-                FPSCap::Hz30  => sleep(delta.sub(Duration::from_millis(33)).elapsed()),
-                FPSCap::Hz60  => sleep(delta.sub(Duration::from_millis(16)).elapsed()),
-                FPSCap::Hz75  => sleep(delta.sub(Duration::from_millis(13)).elapsed()),
-                FPSCap::Hz90  => sleep(delta.sub(Duration::from_millis(11)).elapsed()),
-                FPSCap::Hz144 => sleep(delta.sub(Duration::from_millis(6)).elapsed()),
-                FPSCap::Hz240 => sleep(delta.sub(Duration::from_millis(4)).elapsed()),
-                FPSCap::Unlimited => {} // dont sleep at all
+            let frame_time = frame_start.elapsed();
+            let frame_delay = match &self.cap {
+                FPSCap::Hz30  => Duration::from_millis(1000 / 30),
+                FPSCap::Hz60  => Duration::from_millis(1000 / 60),
+                FPSCap::Hz75  => Duration::from_millis(1000 / 75),
+                FPSCap::Hz90  => Duration::from_millis(1000 / 90),
+                FPSCap::Hz144  => Duration::from_millis(1000 / 144),
+                FPSCap::Hz240  => Duration::from_millis(1000 / 240),
+                FPSCap::Unlimited => Duration::new(0, 0) // make sure we dont use 100% CPU
             };
 
-            delta = Instant::now();
+            if frame_delay > frame_time {
+                let to_sleep = frame_delay - frame_time;
+
+                sleep(to_sleep);
+            }
+
+            delta = frame_start.elapsed();
         }
     }
 }

@@ -47,21 +47,36 @@ pub enum FPSCap {
 
 impl RenderPipeline {
     pub fn new(title: &str, width: u32, height: u32) -> RenderPipeline {
+        let time = Instant::now();
+        log::info!("----- RenderPipeline");
+        log::info!("Initialize SDL2");
         let sdl = sdl2::init().unwrap();
-        let video_subsystem = sdl.video().unwrap();
+        log::info!("Initialize SDL2 Video");
+        let video = sdl.video().unwrap();
+
+        log::info!("Initialize window with OpenGL");
 
         // Create a window at *new() time*
-        let window = video_subsystem.window(title, width, height)
+        let window = video.window(title, width, height)
             .position_centered()
             .opengl()
             .hidden()
             .build()
             .unwrap();
 
-        let video = sdl.video().unwrap();
         gl::load_with(|s| video.gl_get_proc_address(s) as _); // load GL context
 
+        let attr = video.gl_attr();
+        let ogl_version = attr.context_version();
+
+        log::info!("OpenGL Version: {}.{}", ogl_version.0, ogl_version.1);
+        log::info!("OpenGL Extensions: "); // TODO: implement
+
         let canvas = window.into_canvas().build().unwrap();
+
+        log::info!("SDL2 canvas created");
+
+        log::info!("----- Done! took {:#?}\n", time.elapsed());
 
         RenderPipeline {
             sdl,

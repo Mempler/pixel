@@ -72,16 +72,21 @@ impl AssetPipeline {
 
     pub fn new() -> AssetPipeline {
         let asset_databases = glob(
-            "/assets-*.pxl"
+            "assets-*.pxl"
         ).unwrap();
 
         let mut databases = Vec::new();
 
         for asset_database in asset_databases {
+            let instant = std::time::Instant::now();
             let path = asset_database.unwrap();
+
+            log::info!("------- Loading {}", path.file_name().to_str().unwrap());
 
             let db = AssetDatabase::from_bytes(std::fs::read(path.path()).unwrap())
                 .unwrap();
+
+            log::info!("------- Done! took {:#?}", instant.elapsed());
 
             databases.push(db);
         }

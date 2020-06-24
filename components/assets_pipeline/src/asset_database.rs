@@ -24,7 +24,7 @@ use flate2::read::GzDecoder;
 use flate2::Compression;
 
 pub const MAX_SIZE: usize = 0x8000000; // 128 MB
-pub const DATABASE_VERSION: i32 = 0x10; // 1.0
+pub const DATABASE_VERSION: u8 = 0x10; // 1.0
 
 #[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
 pub enum AssetDatabaseError {
@@ -188,19 +188,21 @@ impl AssetDatabase {
 
         let mut cursor = Cursor::new(buff);
 
-        let version = cursor.read_i32::<LittleEndian>()?;
+        let version = cursor.read_u8()?;
         let entry_len = cursor.read_u32::<LittleEndian>()?;
-
         for _ in 0..entry_len {
             if version >= 0x10 /* 1.0 */ {
                 let key_len = cursor.read_u32::<LittleEndian>()?;
                 let mut key_bytes = Vec::new();
+                key_bytes.resize(key_len as usize, 0);
                 cursor.read_exact(&mut key_bytes)?;
 
                 let key = std::str::from_utf8(&key_bytes).unwrap();
                 let entry_type = cursor.read_u8()?.into();
 
                 let data_len = cursor.read_u32::<LittleEndian>()?;
+
+                log::info!("Found asset {}<{:#?}>", key, entry_type);
 
                 db.push_entry(AssetEntry {
                     entry_key: key.to_string(),
@@ -212,8 +214,11 @@ impl AssetDatabase {
 
         for entry in &mut db.entries {
             entry.data.resize(entry.data.capacity(), 0x00); // set len to capacity
+            cursor.read_exact(&mut entry.data)?;
 
-            cursor.read_exact(entry.data.as_mut_slice())?;
+            log::info!("Loaded {}<{:#?}> {:>5}", entry.entry_key, entry.entry_type,
+                bytesize::to_string((entry.entry_key.len() + 1 + entry.data.len()) as u64, false));
+
         }
 
         Ok(db)
@@ -222,11 +227,11 @@ impl AssetDatabase {
     pub fn to_bytes(&self) -> std::io::Result<Vec<u8>> {
         let mut data = Vec::<u8>::new();
 
-        data.write_i32::<LittleEndian>(DATABASE_VERSION)?;
+        data.write_u8(DATABASE_VERSION)?;
         data.write_u32::<LittleEndian>(self.entries.len() as u32)?;
         for entry in &self.entries {
             data.write_u32::<LittleEndian>(entry.entry_key.len() as u32)?;
-            data.write_fmt(format_args!("{}", entry.entry_key))?;
+            data.write_all(entry.entry_key.as_bytes())?;
 
             data.write_u8(entry.entry_type.clone() as u8)?;
             data.write_u32::<LittleEndian>(entry.data.len() as u32)?;

@@ -8,7 +8,7 @@ use parking_lot::Mutex;
 
 use std::process::exit;
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::Duration;
 use assets_pipeline::AssetPipeline;
 
 lazy_static! {
@@ -119,7 +119,7 @@ impl PxlGame {
         };
     }
 
-    fn update(&mut self, _delta: &Instant) {
+    fn update(&mut self, _delta: &Duration) {
         #[cfg(build = "debug")]
         {
             let ui = self.render_pipeline.get_imgui_ui().unwrap();
@@ -129,7 +129,7 @@ impl PxlGame {
     }
 
     // Renderer for rendering children
-    fn render(&mut self, _delta: &Instant) {
+    fn render(&mut self, _delta: &Duration) {
 
     }
 }

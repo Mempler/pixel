@@ -20,7 +20,7 @@ pub struct PxlGame {
     render_pipeline: RenderPipeline,
     audio_system: AudioSystem,
     event_pipeline: EventPipeline,
-    asset_pipeline: AssetPipeline
+    asset_pipeline: AssetPipeline,
 }
 
 unsafe impl Send for PxlGame {}
@@ -33,7 +33,7 @@ impl PxlGame {
             render_pipeline: RenderPipeline::new("Project Pixel", 800, 600),
             audio_system: AudioSystem::new(),
             event_pipeline: EventPipeline::new(),
-            asset_pipeline: AssetPipeline::new()
+            asset_pipeline: AssetPipeline::new(),
         }
     }
 
@@ -86,7 +86,7 @@ impl PxlGame {
         self.event_pipeline.register_handler(|ev| GAME.lock().handle_event(ev));
 
         self.render_pipeline.register_renderer(
-            |delta| GAME.lock().render(delta))
+            |delta| GAME.lock().render(delta));
     }
 
     pub fn run(&mut self) -> ! {
@@ -103,7 +103,9 @@ impl PxlGame {
         // OpenGL calls however wont work!
         // TODO: add another "run" function for processing OpenGL calls
         // TODO: make this multi threaded.
-        self.render_pipeline.run(&mut self.event_pipeline, |_delta, _pipeline| {
+        self.render_pipeline.run(&mut self.event_pipeline, |delta, _pipeline| {
+            GAME.lock().update(delta);
+
             false // don't exit.
         })
     }
@@ -115,6 +117,15 @@ impl PxlGame {
 
             _ => {}
         };
+    }
+
+    fn update(&mut self, _delta: &Instant) {
+        #[cfg(build = "debug")]
+        {
+            let ui = self.render_pipeline.get_imgui_ui().unwrap();
+
+            ui.show_demo_window(&mut true);
+        }
     }
 
     // Renderer for rendering children

@@ -181,6 +181,8 @@ pub enum Event {
         pressure: f32
     },
 
+    //RawSDL2(sdl2::event::Event),
+
     Unknown
 }
 
@@ -364,7 +366,7 @@ impl EventPipeline {
     pub fn new() -> EventPipeline {
         EventPipeline {
             event_queue: vec![],
-            event_handlers: vec![],
+            event_handlers: vec![]
         }
     }
 

@@ -10,9 +10,14 @@ use std::process::exit;
 use std::sync::Arc;
 use std::time::Duration;
 use assets_pipeline::AssetPipeline;
+use imgui_debug_utils::ImGuiConsole;
 
 lazy_static! {
-    pub static ref GAME: Arc<Mutex<PxlGame>> = Arc::new(Mutex::new(PxlGame::new()));
+    pub static ref GAME: Arc<Mutex<PxlGame>> = {
+        ImGuiConsole::init().unwrap();
+
+        Arc::new(Mutex::new(PxlGame::new()))
+    };
 }
 
 pub struct PxlGame {
@@ -123,6 +128,8 @@ impl PxlGame {
         #[cfg(build = "debug")]
         {
             let ui = self.render_pipeline.get_imgui_ui().unwrap();
+
+            ImGuiConsole::update(ui);
 
             ui.show_demo_window(&mut true);
         }

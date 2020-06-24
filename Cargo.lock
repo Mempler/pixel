@@ -24,7 +24,9 @@ dependencies = [
  "discord-rpc-client",
  "event_pipeline",
  "graphics_engine",
+ "imgui_debug_utils",
  "lazy_static",
+ "log",
  "parking_lot 0.11.0",
 ]
 
@@ -33,9 +35,11 @@ name = "assets_pipeline"
 version = "0.1.0"
 dependencies = [
  "byteorder",
+ "bytesize",
  "flate2",
  "globwalk",
  "image",
+ "log",
 ]
 
 [[package]]
@@ -43,6 +47,7 @@ name = "audio_engine"
 version = "0.1.0"
 dependencies = [
  "fmod",
+ "log",
 ]
 
 [[package]]
@@ -93,6 +98,12 @@ dependencies = [
  "byteorder",
  "iovec",
 ]
+
+[[package]]
+name = "bytesize"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81a18687293a1546b67c246452202bbbf143d239cb43494cc163da14979082da"
 
 [[package]]
 name = "c_vec"
@@ -361,6 +372,7 @@ dependencies = [
  "imgui",
  "imgui-opengl-renderer",
  "imgui-sdl2",
+ "log",
  "parking_lot 0.11.0",
  "sdl2",
 ]
@@ -449,6 +461,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72be9671d64dd0ed26bb708cd10060a431262ac90ae70cf7c5912feefe6849da"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "imgui_debug_utils"
+version = "0.1.0"
+dependencies = [
+ "imgui",
+ "log",
 ]
 
 [[package]]

@@ -17,6 +17,23 @@ impl AudioSystem {
                 sys.init();
             }
 
+        let system_id;
+        #[cfg(feature = "audio_fmod")]
+            {
+                system_id = "fmod"
+            }
+
+        #[cfg(feature = "audio_none")]
+            {
+                system_id = "none"
+            }
+
+        if system_id == "none" {
+            log::warn!("Audio system is not set!\n");
+        } else {
+            log::info!("Initialized AudioSystem with {}\n", system_id);
+        }
+
         AudioSystem {
             sys
         }

@@ -5,11 +5,10 @@ authors = ["mempler"]
 edition = "2018"
 
 [dependencies]
-fmod-sys = { version = "0.1.1", optional = true }
 log = "0.4.8"
 
 [features]
-audio_fmod   = [ "fmod-sys" ]
+audio_fmod   = [ ]
 audio_none   = [ ]
 
 default = [ "audio_fmod" ]

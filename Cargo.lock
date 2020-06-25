@@ -46,7 +46,6 @@ dependencies = [
 name = "audio_engine"
 version = "0.1.0"
 dependencies = [
- "fmod",
  "log",
 ]
 
@@ -104,12 +103,6 @@ name = "bytesize"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81a18687293a1546b67c246452202bbbf143d239cb43494cc163da14979082da"
-
-[[package]]
-name = "c_vec"
-version = "1.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa9e1d9f7d49e289f36f19effbf3d5a5e30163ecf9c7a3c9be94d5374dec5b9a"
 
 [[package]]
 name = "cc"
@@ -274,17 +267,6 @@ dependencies = [
  "crc32fast",
  "libc",
  "miniz_oxide",
-]
-
-[[package]]
-name = "fmod"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbc7accca0db4fd732732c19774d133ccde5fa05b8aae8407cbdf98490844c22"
-dependencies = [
- "byteorder",
- "c_vec",
- "libc",
 ]
 
 [[package]]

@@ -451,6 +451,8 @@ dependencies = [
 name = "imgui_debug_utils"
 version = "0.1.0"
 dependencies = [
+ "assets_pipeline",
+ "bytesize",
  "imgui",
  "log",
 ]

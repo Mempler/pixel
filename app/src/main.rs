@@ -10,7 +10,7 @@ use std::process::exit;
 use std::sync::Arc;
 use std::time::Duration;
 use assets_pipeline::AssetPipeline;
-use imgui_debug_utils::ImGuiConsole;
+use imgui_debug_utils::{ImGuiConsole, AssetBrowser};
 
 lazy_static! {
     pub static ref GAME: Arc<Mutex<PxlGame>> = {
@@ -26,6 +26,8 @@ pub struct PxlGame {
     audio_system: AudioSystem,
     event_pipeline: EventPipeline,
     asset_pipeline: AssetPipeline,
+
+    asset_browser: AssetBrowser
 }
 
 unsafe impl Send for PxlGame {}
@@ -34,11 +36,15 @@ unsafe impl Sync for PxlGame {}
 
 impl PxlGame {
     pub fn new() -> PxlGame {
+        let asset_pipeline = AssetPipeline::new();
+        let asset_browser = AssetBrowser::new(&asset_pipeline);
+
         PxlGame {
             render_pipeline: RenderPipeline::new("Project Pixel", 800, 600),
             audio_system: AudioSystem::new(),
             event_pipeline: EventPipeline::new(),
-            asset_pipeline: AssetPipeline::new(),
+            asset_pipeline,
+            asset_browser
         }
     }
 
@@ -130,6 +136,7 @@ impl PxlGame {
             let ui = self.render_pipeline.get_imgui_ui().unwrap();
 
             ImGuiConsole::update(ui);
+            self.asset_browser.update(ui);
 
             ui.show_demo_window(&mut true);
         }

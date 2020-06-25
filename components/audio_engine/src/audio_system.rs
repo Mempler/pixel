@@ -3,7 +3,7 @@ use crate::Audio;
 
 #[cfg(feature = "audio_fmod")]
 use crate::fmod_sys::*;
-use std::ptr::{null, null_mut};
+use std::ptr::null_mut;
 use std::ffi::c_void;
 
 pub struct AudioSystem {

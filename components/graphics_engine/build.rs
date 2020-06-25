@@ -1,7 +1,5 @@
 use std::env;
-use std::path::{Path, PathBuf};
-
-use globwalk::glob;
+use std::path::PathBuf;
 
 pub fn main() {
     if let Ok(profile) = env::var("PROFILE") {

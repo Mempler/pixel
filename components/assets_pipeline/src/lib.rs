@@ -105,4 +105,16 @@ impl AssetPipeline {
 
         None
     }
+
+    pub fn all_entries(&self) -> Vec<AssetEntry> {
+        let mut entries = vec![];
+
+        for database in &self.databases {
+            for entry in database.iter() {
+                entries.push(entry.clone());
+            }
+        }
+
+        entries
+    }
 }

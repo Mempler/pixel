@@ -44,6 +44,19 @@ impl ImGuiConsole {
 
                 ui.separator();
 
+                let window_size = ui.window_size();
+                sys::igBeginChild(
+                    im_str!("console-content").as_ptr(),
+                    sys::ImVec2 {
+                        x: window_size[0] - 10.0,
+                        y: window_size[1] - 65.0
+                    },
+                    false,
+                    sys::ImGuiWindowFlags_AlwaysAutoResize as i32
+                );
+
+
+
                 for log in &LOGGER.log {
                     let c_string = CString::new(log.1.as_str()).unwrap();
                     let log_str = ImStr::from_cstr_unchecked(c_string.as_c_str());
@@ -65,6 +78,8 @@ impl ImGuiConsole {
                         ui.set_scroll_y(ui.scroll_max_y());
                     }
                 }
+
+                sys::igEndChild();
             });
     }
 

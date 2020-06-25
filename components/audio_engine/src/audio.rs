@@ -2,6 +2,7 @@
 use crate::fmod_sys::*;
 use std::ptr::{null, null_mut};
 
+#[allow(dead_code)]
 pub struct Audio {
     #[cfg(feature = "audio_fmod")]
     pub(crate) audio: *mut FMOD_SOUND,
@@ -125,6 +126,7 @@ impl Audio {
             return *len;
         }
 
+        #[cfg(not(feature = "audio_fmod"))]
         return 0;
     }
 }

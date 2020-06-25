@@ -22,6 +22,7 @@ use image::{RgbaImage, ImageBuffer};
 use flate2::write::GzEncoder;
 use flate2::read::GzDecoder;
 use flate2::Compression;
+use std::slice::Iter;
 
 pub const MAX_SIZE: usize = 0x8000000; // 128 MB
 pub const DATABASE_VERSION: u8 = 0x10; // 1.0
@@ -84,6 +85,16 @@ impl AssetEntry {
         let img = ImageBuffer::from_raw(width, height, pixel_data).unwrap();
 
         img
+    }
+
+    pub fn r#type(&self) -> AssetEntryType {
+        self.entry_type
+    }
+    pub fn key(&self) -> String {
+        self.entry_key.to_owned()
+    }
+    pub fn raw_data(&self) -> &Vec<u8> {
+        &self.data
     }
 
     // TODO: implement
@@ -241,5 +252,9 @@ impl AssetDatabase {
         }
 
         Ok(data)
+    }
+
+    pub fn iter(&self) -> Iter<'_, AssetEntry> {
+        self.entries.iter()
     }
 }

@@ -6,18 +6,19 @@ Pixel is a tiny little game engine which is supposed to run on major platforms
 ### Linux
 ##### Dependencies
 * [Rust](https://www.rust-lang.org/)
-* [FMOD](https://www.fmod.com/) `--no-default-features --features audio_fmod`
 * [llvm](https://releases.llvm.org/download.html)
-* [SDL2](https://www.libsdl.org/download-2.0.php)
 
 ### Windows
 ##### Dependencies
 * [Rust](https://www.rust-lang.org/)
-* [FMOD](https://www.fmod.com/) `--no-default-features --features audio_fmod`
 * [llvm](https://releases.llvm.org/download.html)
-* [SDL2](https://www.libsdl.org/download-2.0.php)
 
 For both platforms, the compilation is very similar for this purpose, we're using Linux shell for simplicity.
 ```shell script
 ~$ cargo build --release 
 ```
+
+## Supported Platforms
+|![Windows](./assets/windows_64x64.png)|![Linux](./assets/linux_64x64.png)|![osX](./assets/osx_64x64.png)|![android](./assets/android_64x64.png)|![ios](./assets/ios_64x64.png)|![web](./assets/wasm_64x64.png)|
+|---|---|---|---|---|---|
+|:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|

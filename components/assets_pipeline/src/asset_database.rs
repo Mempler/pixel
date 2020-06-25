@@ -218,7 +218,6 @@ impl AssetDatabase {
 
             log::info!("Loaded {}<{:#?}> {:>5}", entry.entry_key, entry.entry_type,
                 bytesize::to_string((entry.entry_key.len() + 1 + entry.data.len()) as u64, false));
-
         }
 
         Ok(db)

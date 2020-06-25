@@ -355,10 +355,11 @@ dependencies = [
 
 [[package]]
 name = "globwalk"
-version = "0.3.1"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce5d04da8cf35b507b2cbec92bbf2d5085292d07cd87637994fd437fe1617bbb"
+checksum = "178270263374052c40502e9f607134947de75302c1348d1a0e31db67c1691446"
 dependencies = [
+ "bitflags",
  "ignore",
  "walkdir",
 ]
@@ -369,6 +370,7 @@ version = "0.1.0"
 dependencies = [
  "event_pipeline",
  "gl",
+ "globwalk",
  "imgui",
  "imgui-opengl-renderer",
  "imgui-sdl2",

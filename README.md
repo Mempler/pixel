@@ -21,4 +21,4 @@ For both platforms, the compilation is very similar for this purpose, we're usin
 ## Supported Platforms
 |![Windows](./assets/windows_64x64.png)|![Linux](./assets/linux_64x64.png)|![osX](./assets/osx_64x64.png)|![android](./assets/android_64x64.png)|![ios](./assets/ios_64x64.png)|![web](./assets/wasm_64x64.png)|
 |---|---|---|---|---|---|
-|:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|
+|:heavy_check_mark:|:heavy_check_mark:|:x:|:x:|:x:|:x:|

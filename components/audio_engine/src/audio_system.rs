@@ -1,5 +1,6 @@
 use std::path::Path;
 use crate::Audio;
+#[cfg(feature = "audio_fmod")]
 use rfmod::Channel;
 
 pub struct AudioSystem {
@@ -9,6 +10,7 @@ pub struct AudioSystem {
 
 impl AudioSystem {
     pub fn new() -> AudioSystem {
+        #[cfg(feature = "audio_fmod")]
         let sys;
 
         #[cfg(feature = "audio_fmod")]
@@ -35,12 +37,14 @@ impl AudioSystem {
         }
 
         AudioSystem {
+            #[cfg(feature = "audio_fmod")]
             sys
         }
     }
 
     pub fn from_file<P: AsRef<Path>>(&self, path: P) -> Audio {
         let path = path.as_ref();
+        #[cfg(feature = "audio_fmod")]
         let audio;
 
         #[cfg(feature = "audio_fmod")]
@@ -50,6 +54,7 @@ impl AudioSystem {
         }
 
         Audio {
+            #[cfg(feature = "audio_fmod")]
             audio,
 
             #[cfg(feature = "audio_fmod")]
@@ -66,7 +71,6 @@ impl AudioSystem {
         #[cfg(feature = "audio_fmod")]
         unimplemented!("Not implemented for FMOD!");
 
-        #[cfg(any)]
         unimplemented!();
     }
 }

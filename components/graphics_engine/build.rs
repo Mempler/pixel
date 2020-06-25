@@ -1,69 +1,62 @@
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use globwalk::glob;
 
 pub fn main() {
-    let vendor_dir = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap()).join("vendor");
-
-  
-    let d_rel;
-
-    #[cfg(debug_assertions)]
-    {
-        d_rel = "debug";
-    }
-
-    #[cfg(not(debug_assertions))]
-    {
-        d_rel = "release";
-    }
-
-    let target_dir = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
-        .join("../../target")
-        .join(d_rel);
-
     if let Ok(profile) = env::var("PROFILE") {
         println!(r"cargo:rustc-cfg=build={:?}", profile);
     }
 
-    let mut target_libs;
+    // DLLs
+    let target = env::var("TARGET").unwrap();
+    if target.contains("pc-windows") {
+        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+        let mut lib_dir = manifest_dir.clone();
+        let mut dll_dir = manifest_dir.clone();
+        if target.contains("msvc") {
+            lib_dir.push("msvc");
+            dll_dir.push("msvc");
+        }
+        else {
+            lib_dir.push("gnu-mingw");
+            dll_dir.push("gnu-mingw");
+        }
+        lib_dir.push("lib");
+        dll_dir.push("dll");
+        if target.contains("x86_64") {
+            lib_dir.push("64");
+            dll_dir.push("64");
+        }
+        else {
+            lib_dir.push("32");
+            dll_dir.push("32");
+        }
 
-    #[cfg(win32)]
-    {
-        target_libs = "win-".to_string();
-    }
+        let r_d;
 
-    #[cfg(not(win32))]
-    {
-        target_libs = String::default();
-    }
+        #[cfg(debug_assertions)]
+        {
+            r_d = "debug";
+        }
 
-    #[cfg(target_arch = "x86")]
-    {
-        target_libs += "x86";
-    }
-
-    #[cfg(target_arch = "x86_64")]
-    {
-        target_libs += "x86_64";
-    }
-
-    let libraries_dir = vendor_dir.join(target_libs);
-
-    // Copy all DLLs to output dir on windows
-    #[cfg(win32)]
-    {
-        let dlls = glob(
-            libraries_dir.as_ref().join("**/*.dll").to_str().unwrap()
-        ).unwrap();
-
-        for dll in dlls {
-            let dll = dll.unwrap();
-
-            std::fs::copy(&dll, target_dir.join(&dll.file_name()))
+        #[cfg(not(debug_assertions))]
+        {
+            r_d = "release";
+        }
+        println!("cargo:rustc-link-search=all={}", lib_dir.display());
+        for entry in std::fs::read_dir(dll_dir).expect("Can't read DLL dir")  {
+            let entry_path = entry.expect("Invalid fs entry").path();
+            let file_name_result = entry_path.file_name();
+            let mut new_file_path = manifest_dir.clone().join("../../target/").join(r_d);
+            if let Some(file_name) = file_name_result {
+                let file_name = file_name.to_str().unwrap();
+                if file_name.ends_with(".dll") {
+                    new_file_path.push(file_name);
+                    std::fs::copy(&entry_path, new_file_path.as_path()).expect("Can't copy from DLL dir");
+                }
+            }
         }
     }
-
-    println!(r"cargo:rustc-link-search={}", libraries_dir.display());
 }
+

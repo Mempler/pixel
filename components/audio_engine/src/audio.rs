@@ -69,6 +69,9 @@ impl Audio {
 
     pub fn len(&self) -> u32 {
         #[cfg(feature = "audio_fmod")]
-        self.audio.get_length(TIMEUNIT_MS).unwrap()
+        return self.audio.get_length(TIMEUNIT_MS).unwrap();
+        
+        #[cfg(not(feature = "audio_fmod"))]
+        return 0;
     }
 }

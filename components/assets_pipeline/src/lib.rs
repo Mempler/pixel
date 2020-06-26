@@ -96,7 +96,8 @@ impl AssetPipeline {
         }
     }
 
-    pub fn search(&self, key: String) -> Option<AssetEntry> {
+    pub fn search<S: Into<String>>(&self, key: S) -> Option<AssetEntry> {
+        let key = key.into();
         for db in &self.databases {
             if let Some(entry) = db.get_entry(key.to_owned()) {
                 return Some(entry);

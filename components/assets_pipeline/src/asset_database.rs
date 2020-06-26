@@ -19,13 +19,10 @@ Data Rows {
 use std::io::{Write, Read, Cursor};
 use byteorder::{WriteBytesExt, LittleEndian, ReadBytesExt};
 use image::{RgbaImage, ImageBuffer};
-use flate2::write::GzEncoder;
-use flate2::read::GzDecoder;
-use flate2::Compression;
 use std::slice::Iter;
 
 pub const MAX_SIZE: usize = 0x8000000; // 128 MB
-pub const DATABASE_VERSION: u8 = 0x10; // 1.0
+pub const DATABASE_VERSION: u8 = 0x11; // 1.1
 
 #[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
 pub enum AssetDatabaseError {
@@ -41,7 +38,9 @@ pub enum AssetEntryType {
     AnimatedTexture = 2,
     Audio = 3,
     Video = 4,
-    Particle = 5
+    Particle = 5,
+
+    Shader = 6
 }
 
 impl From<u8> for AssetEntryType {
@@ -70,11 +69,11 @@ impl AssetEntry {
     pub fn into_texture(self) -> RgbaImage {
         assert_eq!(self.entry_type, AssetEntryType::Texture);
 
-        let raw_cursor = Cursor::new(self.data);
+        let mut cursor = Cursor::new(self.data);
 
         // Decompress data
-        let decoder = GzDecoder::new(raw_cursor);
-        let mut cursor = decoder.into_inner();
+        //let decoder = GzDecoder::new(raw_cursor);
+        //let mut cursor = decoder.into_inner();
 
         let width = cursor.read_u32::<LittleEndian>().unwrap();
         let height = cursor.read_u32::<LittleEndian>().unwrap();
@@ -140,13 +139,13 @@ impl AssetEntry {
         }
 
         // Loss less compression of images
-        let mut encoder = GzEncoder::new(Vec::new(), Compression::best());
-        encoder.write_all(pixel_data.as_slice()).unwrap();
+        //let mut encoder = GzEncoder::new(Vec::new(), Compression::best());
+        //encoder.write_all(pixel_data.as_slice()).unwrap();
 
         AssetEntry {
             entry_key: key.as_ref().to_string(),
             entry_type: AssetEntryType::Texture,
-            data: encoder.finish().unwrap()
+            data: pixel_data
         }
     }
 }

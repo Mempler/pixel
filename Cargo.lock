@@ -23,10 +23,11 @@ dependencies = [
  "audio_engine",
  "discord-rpc-client",
  "event_pipeline",
+ "glam",
  "graphics_engine",
  "imgui_debug_utils",
  "lazy_static",
- "log",
+ "log 0.4.8",
  "parking_lot 0.11.0",
 ]
 
@@ -39,14 +40,14 @@ dependencies = [
  "flate2",
  "globwalk",
  "image",
- "log",
+ "log 0.4.8",
 ]
 
 [[package]]
 name = "audio_engine"
 version = "0.1.0"
 dependencies = [
- "log",
+ "log 0.4.8",
 ]
 
 [[package]]
@@ -132,6 +133,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4344512281c643ae7638bbabc3af17a11307803ec8f0fcad9fae512a8bf36467"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "cmake"
+version = "0.1.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e56268c17a6248366d66d4a47a3381369d068cce8409bb1716ed77ea32163bb"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -235,7 +245,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "crossbeam-channel",
- "log",
+ "log 0.4.8",
  "named_pipe",
  "parking_lot 0.7.1",
  "serde",
@@ -302,12 +312,23 @@ dependencies = [
 
 [[package]]
 name = "gl_generator"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04e3e0220a68b8875b5a311fe67ee3b76d3d9b719a92277aff0ec5bb5e7b0ec1"
+dependencies = [
+ "khronos_api 2.2.0",
+ "log 0.3.9",
+ "xml-rs 0.7.0",
+]
+
+[[package]]
+name = "gl_generator"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a795170cbd85b5a7baa58d6d7525cae6a03e486859860c220f7ebbbdd379d0a"
 dependencies = [
  "khronos_api 2.2.0",
- "log",
+ "log 0.4.8",
  "xml-rs 0.7.0",
 ]
 
@@ -318,8 +339,39 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a95dfc23a2b4a9a2f5ab41d194f8bfda3cabec42af4e39f08c339eb2a0c124d"
 dependencies = [
  "khronos_api 3.1.0",
- "log",
+ "log 0.4.8",
  "xml-rs 0.8.3",
+]
+
+[[package]]
+name = "glam"
+version = "0.8.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b00572b5b10070ac495be20a25b4c8d379d20bcdec8ea0c870022b620ec79b20"
+
+[[package]]
+name = "glfw"
+version = "0.38.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07afd5f1b258f091893e4a83b3acd91bb031a293186f614a119d650ad0faf7ac"
+dependencies = [
+ "bitflags",
+ "glfw-sys",
+ "libc",
+ "log 0.4.8",
+ "objc",
+ "raw-window-handle",
+ "semver",
+ "winapi 0.3.8",
+]
+
+[[package]]
+name = "glfw-sys"
+version = "3.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b567b13b593ec58ea912b2658ee6230ffe20a069fa5b771800acc69bb3a157e"
+dependencies = [
+ "cmake",
 ]
 
 [[package]]
@@ -331,7 +383,7 @@ dependencies = [
  "aho-corasick",
  "bstr",
  "fnv",
- "log",
+ "log 0.4.8",
  "regex",
 ]
 
@@ -352,11 +404,15 @@ version = "0.1.0"
 dependencies = [
  "event_pipeline",
  "gl",
+ "gl_generator 0.7.0",
+ "glam",
+ "glfw",
  "globwalk",
+ "image",
  "imgui",
  "imgui-opengl-renderer",
  "imgui-sdl2",
- "log",
+ "log 0.4.8",
  "parking_lot 0.11.0",
  "sdl2",
 ]
@@ -379,7 +435,7 @@ dependencies = [
  "crossbeam-utils 0.7.2",
  "globset",
  "lazy_static",
- "log",
+ "log 0.4.8",
  "memchr",
  "regex",
  "same-file",
@@ -454,7 +510,7 @@ dependencies = [
  "assets_pipeline",
  "bytesize",
  "imgui",
- "log",
+ "log 0.4.8",
 ]
 
 [[package]]
@@ -552,6 +608,15 @@ dependencies = [
 
 [[package]]
 name = "log"
+version = "0.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e19e8d5c34a3e0e2223db8e060f9e8264aeeb5c5fc64a4ee9965c062211c024b"
+dependencies = [
+ "log 0.4.8",
+]
+
+[[package]]
+name = "log"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
@@ -564,6 +629,15 @@ name = "lzw"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d947cbb889ed21c2a84be6ffbaebf5b4e0f4340638cba0444907e38b56be084"
+
+[[package]]
+name = "malloc_buf"
+version = "0.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "maybe-uninit"
@@ -654,6 +728,15 @@ checksum = "05499f3756671c15885fee9034446956fff3f243d6077b91e5767df161f766b3"
 dependencies = [
  "hermit-abi",
  "libc",
+]
+
+[[package]]
+name = "objc"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
+dependencies = [
+ "malloc_buf",
 ]
 
 [[package]]
@@ -885,6 +968,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cbf7e9e623549b0e21f6e97cf8ecf247c1a8fd2e8a992ae265314300b2455d5c"
 dependencies = [
  "rand_core 0.3.1",
+]
+
+[[package]]
+name = "raw-window-handle"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a441a7a6c80ad6473bd4b74ec1c9a4c951794285bf941c2126f607c72e48211"
+dependencies = [
+ "libc",
 ]
 
 [[package]]

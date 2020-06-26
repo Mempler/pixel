@@ -6,5 +6,5 @@ members = [
     "components/graphics_engine",
     "components/assets_pipeline",
     "components/event_pipeline",
-    "components/imgui_debug_utils",
+    "components/imgui_debug_utils"
 ]

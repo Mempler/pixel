@@ -2,10 +2,8 @@ use sdl2::{Sdl, VideoSubsystem};
 
 use std::time::{Duration, Instant};
 use std::thread::sleep;
-use sdl2::video::Window;
+use sdl2::video::{Window, GLProfile};
 use sdl2::render::WindowCanvas;
-use sdl2::pixels::PixelFormatEnum;
-use sdl2::rect::Rect;
 use event_pipeline::EventPipeline;
 #[cfg(build = "debug")]
 use crate::imgui_wrapper::ImGui;
@@ -56,6 +54,20 @@ impl RenderPipeline {
         log::info!("Initialize SDL2 Video");
         let video = sdl.video().unwrap();
 
+        let gl_attr = video.gl_attr();
+
+        // Set Debug mode
+        gl_attr.set_context_flags().debug().set();
+
+        // Set OpenGL Version
+        gl_attr.set_context_profile(GLProfile::Core);
+        gl_attr.set_context_version(3, 2);
+
+        // enable Anti Aliasing
+        gl_attr.set_multisample_buffers(1);
+        gl_attr.set_multisample_samples(4);
+
+
         log::info!("Initialize window with OpenGL");
 
         // Create a window at *new() time*
@@ -63,6 +75,7 @@ impl RenderPipeline {
             .position_centered()
             .opengl()
             .hidden()
+            .resizable()
             .build()
             .unwrap();
 
@@ -79,9 +92,7 @@ impl RenderPipeline {
 
         canvas.window().gl_set_context_to_current().unwrap();
 
-        let attr = video.gl_attr();
-        let ogl_version = attr.context_version();
-
+        let ogl_version = gl_attr.context_version();
         log::info!("OpenGL Version: {}.{}", ogl_version.0, ogl_version.1);
         log::info!("OpenGL Extensions: "); // TODO: implement
 
@@ -140,31 +151,6 @@ impl RenderPipeline {
         }
     }
 
-    pub fn draw_rect(&mut self) -> Result<(), String> { // Unfinished template, hardcoded, this is bad...
-        let texture_creator = self.get_window_canvas_mut().texture_creator();
-
-        let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 256, 256)
-            .map_err(|e| e.to_string())?;
-
-        // Create a red-green gradient
-        texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-            for y in 0..256 {
-                for x in 0..256 {
-                    let offset = y*pitch + x*3;
-                    buffer[offset] = x as u8;
-                    buffer[offset + 1] = y as u8;
-                    buffer[offset + 2] = 0;
-                }
-            }
-        })?;
-
-        self.get_window_canvas_mut().copy(&texture, None, Some(Rect::new(100, 100, 256, 256)))?;
-        self.get_window_canvas_mut().copy_ex(&texture, None,
-            Some(Rect::new(450, 100, 128, 128)), 45.0, None, false, false)?;
-        self.get_window_canvas_mut().present();
-        Ok(()) // for now return `()` in order to handle errors.
-    }
-
     pub fn run<F>(&mut self, ev_pipeline: &mut EventPipeline, f: F) -> !
         where
             F: Fn(&Duration, &mut RenderPipeline) -> bool // true = Exit loop, false = continue
@@ -195,6 +181,22 @@ impl RenderPipeline {
                 // TODO: somehow pass this down the line
                 let events = event_pump.poll_iter();
                 for event in events {
+                    match &event {
+                        sdl2::event::Event::Window {
+                            timestamp: _,
+                            window_id: _,
+                            win_event
+                        } => {
+                            match win_event {
+                                sdl2::event::WindowEvent::Resized(w, h) => unsafe {
+                                    gl::Viewport(0, 0, *w, *h); // Set the gl viewport for -1.0 to 1.0 coords
+                                }
+                                _ => { }
+                            }
+                        }
+                        _ => {}
+                    }
+
                     #[cfg(build = "debug")]
                     unsafe { // ya dirty hacker Mempler is here! lets bypass some of rusts safety features
                         let imgui = self.imgui.as_mut().unwrap().imgui();
@@ -233,8 +235,11 @@ impl RenderPipeline {
             { // Render Frame
                 unsafe {
                     gl::ClearColor(0.2, 0.2, 0.2, 1.0);
-                    gl::Viewport(0, 0, 900, 700); // Useless? I dont know.
                     gl::Clear(gl::COLOR_BUFFER_BIT);
+                }
+
+                for render_callback in &self.render_callbacks {
+                    render_callback(&delta);
                 }
 
                 // NOTICE: this is so bad... too bad!
@@ -252,10 +257,6 @@ impl RenderPipeline {
                     (*imgui_renderer).render(*ui_box);
 
                     self.imgui_frame = None;
-                }
-
-                for render_callback in &self.render_callbacks {
-                    render_callback(&delta);
                 }
 
                 self.get_window_canvas_mut().present();

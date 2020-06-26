@@ -13,9 +13,16 @@ gl = "0.14.0"
 parking_lot = "0.11.0"
 log = "0.4.8"
 
+glfw = "0.38.0"
+
+image = "0.23.6"
+
 imgui = "0.4.0"
 imgui-sdl2 = "0.11.0"
 imgui-opengl-renderer = "0.8.0"
 
+glam = "0.8.7" # Math library
+
 [build-dependencies]
 globwalk = "0.8.0"
+gl_generator = "0.7.0"

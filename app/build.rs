@@ -13,7 +13,7 @@ pub fn main() {
     println!("cargo:rerun-if-changed={}", asset_dir.display());
 
     // do NOT use ./assets otherwise it would simply break
-    let databases = AssetPipeline::compile_folder("assets");
+    let databases = AssetPipeline::compile_folder(asset_dir);
 
     let mut i = 0;
     for database in databases {

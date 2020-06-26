@@ -64,17 +64,24 @@ impl RenderPipeline {
             .build()
             .unwrap();
 
+        let canvas = window
+            .into_canvas()
+            .index(RenderPipeline::find_sdl_gl_driver().unwrap())
+            .build()
+            .unwrap();
+        
+        log::info!("SDL2 canvas created");
+
+
         gl::load_with(|s| video.gl_get_proc_address(s) as _); // load GL context
+
+        canvas.window().gl_set_context_to_current().unwrap();
 
         let attr = video.gl_attr();
         let ogl_version = attr.context_version();
 
         log::info!("OpenGL Version: {}.{}", ogl_version.0, ogl_version.1);
         log::info!("OpenGL Extensions: "); // TODO: implement
-
-        let canvas = window.into_canvas().build().unwrap();
-
-        log::info!("SDL2 canvas created");
 
         log::info!("----- Done! took {:#?}\n", time.elapsed());
 
@@ -245,5 +252,15 @@ impl RenderPipeline {
 
             delta = frame_start.elapsed();
         }
+    }
+
+    fn find_sdl_gl_driver() -> Option<u32> {
+        for (index, item) in sdl2::render::drivers().enumerate() {
+            if item.name == "opengl" {
+                return Some(index as u32);
+            }
+        }
+
+        None
     }
 }

@@ -4,6 +4,8 @@ use std::time::{Duration, Instant};
 use std::thread::sleep;
 use sdl2::video::Window;
 use sdl2::render::WindowCanvas;
+use sdl2::pixels::PixelFormatEnum;
+use sdl2::rect::Rect;
 use event_pipeline::EventPipeline;
 #[cfg(build = "debug")]
 use crate::imgui_wrapper::ImGui;
@@ -69,7 +71,7 @@ impl RenderPipeline {
             .index(RenderPipeline::find_sdl_gl_driver().unwrap())
             .build()
             .unwrap();
-        
+
         log::info!("SDL2 canvas created");
 
 
@@ -136,6 +138,31 @@ impl RenderPipeline {
             Some(ptr) => unsafe { Some(&mut *(ptr as *mut Ui)) },
             None => None
         }
+    }
+
+    pub fn draw_rect(&mut self) -> Result<(), String> { // Unfinished template, hardcoded, this is bad...
+        let texture_creator = self.get_window_canvas_mut().texture_creator();
+
+        let mut texture = texture_creator.create_texture_streaming(PixelFormatEnum::RGB24, 256, 256)
+            .map_err(|e| e.to_string())?;
+
+        // Create a red-green gradient
+        texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+            for y in 0..256 {
+                for x in 0..256 {
+                    let offset = y*pitch + x*3;
+                    buffer[offset] = x as u8;
+                    buffer[offset + 1] = y as u8;
+                    buffer[offset + 2] = 0;
+                }
+            }
+        })?;
+
+        self.get_window_canvas_mut().copy(&texture, None, Some(Rect::new(100, 100, 256, 256)))?;
+        self.get_window_canvas_mut().copy_ex(&texture, None,
+            Some(Rect::new(450, 100, 128, 128)), 45.0, None, false, false)?;
+        self.get_window_canvas_mut().present();
+        Ok(()) // for now return `()` in order to handle errors.
     }
 
     pub fn run<F>(&mut self, ev_pipeline: &mut EventPipeline, f: F) -> !
@@ -206,6 +233,7 @@ impl RenderPipeline {
             { // Render Frame
                 unsafe {
                     gl::ClearColor(0.2, 0.2, 0.2, 1.0);
+                    gl::Viewport(0, 0, 900, 700); // Useless? I dont know.
                     gl::Clear(gl::COLOR_BUFFER_BIT);
                 }
 

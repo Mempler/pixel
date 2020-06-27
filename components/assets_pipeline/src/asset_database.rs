@@ -20,6 +20,7 @@ use std::io::{Write, Read, Cursor};
 use byteorder::{WriteBytesExt, LittleEndian, ReadBytesExt};
 use image::{RgbaImage, ImageBuffer};
 use std::slice::Iter;
+use audio_engine::{Audio, AudioSystem};
 
 pub const MAX_SIZE: usize = 0x8000000; // 128 MB
 pub const DATABASE_VERSION: u8 = 0x11; // 1.1
@@ -61,7 +62,9 @@ impl From<u8> for AssetEntryType {
 pub struct AssetEntry {
     pub (crate) entry_type: AssetEntryType,
     pub (crate) entry_key: String,
-    pub (crate) data: Vec<u8>
+    pub (crate) is_compressed: bool,
+    pub (crate) data: Vec<u8>,
+    pub (crate) compressed_data: Vec<u8> // just for the builder
 }
 
 impl AssetEntry {
@@ -110,11 +113,10 @@ impl AssetEntry {
         unimplemented!();
     }
 
-    // TODO: implement
-    pub fn into_audio(self) {
+    pub fn into_audio(self, audio_system: &AudioSystem) -> Audio {
         assert_eq!(self.entry_type, AssetEntryType::Audio);
 
-        unimplemented!();
+        audio_system.from_memory(self.data)
     }
 
     // TODO: implement
@@ -138,14 +140,22 @@ impl AssetEntry {
             pixel_data.push(pxl[3]); // A
         }
 
-        // Loss less compression of images
-        //let mut encoder = GzEncoder::new(Vec::new(), Compression::best());
-        //encoder.write_all(pixel_data.as_slice()).unwrap();
-
         AssetEntry {
             entry_key: key.as_ref().to_string(),
             entry_type: AssetEntryType::Texture,
-            data: pixel_data
+            is_compressed: true,
+            data: pixel_data,
+            compressed_data: Vec::new()
+        }
+    }
+
+    pub fn from_audio<S: AsRef<str>>(key: S, audio: Vec<u8>) -> AssetEntry {
+        AssetEntry {
+            entry_key: key.as_ref().to_string(),
+            entry_type: AssetEntryType::Audio,
+            is_compressed: false, // Dont compress audio, not worth it :c
+            data: audio,
+            compressed_data: Vec::new()
         }
     }
 }
@@ -209,7 +219,7 @@ impl AssetDatabase {
 
                 let key = std::str::from_utf8(&key_bytes).unwrap();
                 let entry_type = cursor.read_u8()?.into();
-
+                let is_compressed = cursor.read_u8()? != 0;
                 let data_len = cursor.read_u32::<LittleEndian>()?;
 
                 log::info!("Found asset {}<{:#?}>", key, entry_type);
@@ -217,37 +227,71 @@ impl AssetDatabase {
                 db.push_entry(AssetEntry {
                     entry_key: key.to_string(),
                     entry_type,
-                    data: Vec::<u8>::with_capacity(data_len as usize)
+                    is_compressed,
+                    data: Vec::<u8>::with_capacity(data_len as usize),
+                    compressed_data: Vec::new()
                 }).unwrap();
             }
         }
 
         for entry in &mut db.entries {
-            entry.data.resize(entry.data.capacity(), 0x00); // set len to capacity
-            cursor.read_exact(&mut entry.data)?;
+            let mut raw_data = vec![];
+            raw_data.resize(entry.data.capacity(), 0x00); // read into raw_data
+            cursor.read_exact(&mut raw_data)?;
 
-            log::info!("Loaded {}<{:#?}> {:>5}", entry.entry_key, entry.entry_type,
+            if entry.is_compressed {
+                entry.data = vec![]; // Reset capacity
+
+                let mut decoder = GzDecoder::new(Cursor::new(raw_data));
+                decoder.read_to_end(&mut entry.data)?;
+            } else {
+                entry.data = raw_data;
+            }
+
+            let comp;
+            if entry.is_compressed {
+                comp = "(Compressed) ";
+            } else {
+                comp = "";
+            }
+
+            log::info!("Loaded {}{}<{:#?}> {:>5}", comp, entry.entry_key, entry.entry_type,
                 bytesize::to_string((entry.entry_key.len() + 1 + entry.data.len()) as u64, false));
         }
 
         Ok(db)
     }
 
-    pub fn to_bytes(&self) -> std::io::Result<Vec<u8>> {
+    pub fn to_bytes(&mut self) -> std::io::Result<Vec<u8>> {
         let mut data = Vec::<u8>::new();
 
         data.write_u8(DATABASE_VERSION)?;
         data.write_u32::<LittleEndian>(self.entries.len() as u32)?;
-        for entry in &self.entries {
+        for entry in &mut self.entries {
             data.write_u32::<LittleEndian>(entry.entry_key.len() as u32)?;
             data.write_all(entry.entry_key.as_bytes())?;
 
             data.write_u8(entry.entry_type.clone() as u8)?;
-            data.write_u32::<LittleEndian>(entry.data.len() as u32)?;
+            data.write_u8(entry.is_compressed as u8)?;
+
+            // Pre compress
+            if entry.is_compressed {
+                let mut encoder = GzEncoder::new(vec![], Compression::best());
+                encoder.write_all(&entry.data)?;
+                entry.compressed_data = encoder.finish()?;
+
+                data.write_u32::<LittleEndian>(entry.compressed_data.len() as u32)?;
+            } else {
+                data.write_u32::<LittleEndian>(entry.data.len() as u32)?;
+            }
         };
 
         for entry in &self.entries {
-            data.write(entry.data.as_slice())?;
+            if entry.is_compressed {
+                data.write_all(&entry.compressed_data)?;
+            } else {
+                data.write_all(&entry.data)?;
+            }
         }
 
         Ok(data)

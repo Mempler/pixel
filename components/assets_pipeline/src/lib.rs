@@ -63,8 +63,28 @@ impl AssetPipeline {
         #[allow(unused_variables)]
         for entry in audio_paths {
             let entry = entry.unwrap();
+            let name = entry.file_name();
 
-            unimplemented!("Audio is not yet implemented!");
+            let data = std::fs::read(entry.path()).unwrap();
+
+            let asset_entry = AssetEntry::from_audio(
+                name.to_str().unwrap().to_string().split(".").collect::<Vec<&str>>()[0].to_string(),
+                data
+            );
+
+            if asset_entry.data.len() >= MAX_SIZE {
+                panic!("{} is too large! > 128 MB", name.to_str().unwrap()); // just crash at this point.
+            }
+
+            let last_db = databases.last_mut().unwrap();
+            if last_db.does_fit(&asset_entry) { // Make sure our entry fits
+                last_db.push_entry(asset_entry).unwrap();
+            } else { // Otherwise create a new db, if it still doesn't fit then we're fucked.
+                databases.push(AssetDatabase::new());
+
+                let last_db = databases.last_mut().unwrap();
+                last_db.push_entry(asset_entry).unwrap();
+            }
         }
 
         databases
@@ -96,10 +116,9 @@ impl AssetPipeline {
         }
     }
 
-    pub fn search<S: Into<String>>(&self, key: S) -> Option<AssetEntry> {
-        let key = key.into();
+    pub fn search<S: AsRef<str>>(&self, key: S) -> Option<AssetEntry> {
         for db in &self.databases {
-            if let Some(entry) = db.get_entry(key.to_owned()) {
+            if let Some(entry) = db.get_entry(key.as_ref().to_string()) {
                 return Some(entry);
             }
         }

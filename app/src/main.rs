@@ -108,6 +108,14 @@ impl PxlGame {
             GAME.force_unlock();
         }
 
+        /* TODO: use that as theme song for our game.
+        let mut theme = self.asset_pipeline.search("One-eyed Maestro")
+            .unwrap()
+            .into_audio(self.audio_system());
+
+        theme.play();
+         */
+
         // Input is a single threaded update loop.
         // Update and Render is being rendered on different threads
         // Note: it's fine to just "draw" graphics, they're not truly drawn

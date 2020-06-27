@@ -120,6 +120,19 @@ impl Shader {
         None
     }
 
+    pub fn uniform_mat4f<S: AsRef<str>>(&self, name: S, val: &glm::Mat4) {
+        unsafe {
+            let c_str = CString::new(name.as_ref()).unwrap();
+            let uni_loc = gl::GetUniformLocation(self.program, c_str.as_ptr());
+
+            if uni_loc < 0 {
+                log::error!("{} was not found", name.as_ref());
+            }
+
+            gl::UniformMatrix4fv(uni_loc, 1, gl::FALSE, val.as_ptr());
+        }
+    }
+
     pub fn id(&self) -> u32 {
         self.program
     }

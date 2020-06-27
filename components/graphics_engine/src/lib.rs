@@ -1,5 +1,7 @@
 #![feature(stmt_expr_attributes)]
 
+pub extern crate nalgebra_glm as glm;
+
 mod gl {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }

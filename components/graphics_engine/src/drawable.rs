@@ -1,8 +1,9 @@
 use std::time::Duration;
+use crate::RenderPipeline;
 
 pub trait Drawable {
     fn update(&self, delta: &Duration);
-    fn render(&self, delta: &Duration);
+    fn render(&self, pipeline: &RenderPipeline, delta: &Duration);
 }
 
 pub trait Vertices {

@@ -145,11 +145,10 @@ impl PxlGame {
 
     // Renderer for rendering children
     fn render(&mut self, delta: &Duration) {
-        let sprite = Sprite::new(
-            self.asset_pipeline.search("World").unwrap().into_texture());
+        let sprite = Sprite::new(self.asset_pipeline.search("World").unwrap().into_texture());
 
         sprite.update(delta);
-        sprite.render(delta);
+        sprite.render(self.render_pipeline(), delta);
     }
 }
 

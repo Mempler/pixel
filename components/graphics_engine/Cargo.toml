@@ -21,7 +21,7 @@ imgui = "0.4.0"
 imgui-sdl2 = "0.11.0"
 imgui-opengl-renderer = "0.8.0"
 
-glam = "0.8.7" # Math library
+nalgebra-glm = "0.7.0" # Math library
 
 [build-dependencies]
 globwalk = "0.8.0"

@@ -3,13 +3,19 @@
 use image::RgbaImage;
 
 pub struct Texture2D {
-    texture: u32
+    texture: u32,
+
+    width: i32,
+    height: i32,
 }
 
 impl Texture2D {
     pub fn new(pixels: &[u8], width: i32, height: i32) -> Texture2D {
         let mut texture = Texture2D {
-            texture: 0
+            texture: 0,
+
+            width,
+            height
         };
 
         unsafe {

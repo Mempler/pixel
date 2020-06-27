@@ -73,7 +73,7 @@ impl ImGuiConsole {
                         text_colour,
                         log_str
                     );
-                    
+
                     if ui.scroll_max_y() <= ui.scroll_y() {
                         ui.set_scroll_y(ui.scroll_max_y());
                     }

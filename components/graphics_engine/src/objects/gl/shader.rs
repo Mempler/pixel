@@ -33,9 +33,11 @@ attribute vec2 iTexPos;
 
 varying vec2 TexPos;
 
+uniform mat4 iMVP;
+
 void main()
 {
-    gl_Position = vec4( iPos.xyz, 1.0 );
+    gl_Position = iMVP * vec4( iPos.xyz, 1.0 );
     TexPos = iTexPos;
 }
 ";
@@ -126,7 +128,7 @@ impl Shader {
             let uni_loc = gl::GetUniformLocation(self.program, c_str.as_ptr());
 
             if uni_loc < 0 {
-                log::error!("{} was not found", name.as_ref());
+                log::warn!("uniform_mat4f {} was not found", name.as_ref());
             }
 
             gl::UniformMatrix4fv(uni_loc, 1, gl::FALSE, val.as_ptr());

@@ -21,6 +21,9 @@ use byteorder::{WriteBytesExt, LittleEndian, ReadBytesExt};
 use image::{RgbaImage, ImageBuffer};
 use std::slice::Iter;
 use audio_engine::{Audio, AudioSystem};
+use flate2::read::GzDecoder;
+use flate2::write::GzEncoder;
+use flate2::Compression;
 
 pub const MAX_SIZE: usize = 0x8000000; // 128 MB
 pub const DATABASE_VERSION: u8 = 0x11; // 1.1

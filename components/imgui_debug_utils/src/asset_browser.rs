@@ -1,8 +1,6 @@
 use assets_pipeline::{AssetPipeline, AssetEntry};
 
 use imgui::*;
-use std::ffi::CString;
-use imgui::sys::{ImVec2, ImGuiWindowFlags_AlwaysAutoResize};
 
 pub struct AssetBrowser {
     entries: Vec<AssetEntry>
@@ -24,7 +22,7 @@ impl AssetBrowser {
                 let style = ui.clone_style();
 
                 for (i, entry) in self.entries.iter().enumerate() {
-                    unsafe {
+                    {
                         let key = entry.key();
                         let size_in_memory = bytesize::to_string(entry.raw_data().len() as u64, false);
 

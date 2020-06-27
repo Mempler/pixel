@@ -18,11 +18,12 @@ impl Texture2D {
 
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
 
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, width, height,
-                0, gl::RGBA, gl::UNSIGNED_BYTE, pixels.as_ptr() as _);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32,
+                           width, height, 0, gl::RGBA,
+                           gl::UNSIGNED_BYTE, pixels.as_ptr() as _);
 
             gl::GenerateMipmap(gl::TEXTURE_2D);
 
@@ -45,6 +46,14 @@ impl Texture2D {
     pub fn unbind(&self) {
         unsafe {
             gl::BindTexture(gl::TEXTURE_2D, 0);
+        }
+    }
+}
+
+impl Drop for Texture2D {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteTextures(1, &self.texture);
         }
     }
 }

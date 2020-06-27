@@ -4,6 +4,7 @@ use std::time::Duration;
 use super::gl::Texture2D;
 use crate::objects::gl::{VertexArrayObject, VertexBuffer, Shader, ElementArrayBuffer};
 use crate::Vertices;
+use std::ptr::null;
 
 // a High level struct for drawing sprites to the screen
 // TODO: Spritebatch for increased performance by having hundreds of sprites
@@ -81,7 +82,7 @@ impl crate::Drawable for Sprite {
         self.vao.bind();
 
         unsafe {
-            gl::DrawArrays(gl::QUADS, 0, 4);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, null());
         }
 
         self.vao.unbind();
@@ -95,10 +96,10 @@ impl Vertices for Sprite {
         vec![
             // Quad
            //X     Y    Z       TX   TY
-             1.0,  1.0, 0.0,    1.0, 1.0, // top right
-             1.0, -1.0, 0.0,    1.0, 0.0, // bottom right
-            -1.0, -1.0, 0.0,    0.0, 0.0, // bottom left
-            -1.0,  1.0, 0.0,    0.0, 1.0, // top left
+             1.0,  1.0, 0.0,    1.0, 0.0, // top right
+             1.0, -1.0, 0.0,    1.0, 1.0, // bottom right
+            -1.0, -1.0, 0.0,    0.0, 1.0, // bottom left
+            -1.0,  1.0, 0.0,    0.0, 0.0, // top left
         ]
     }
 

@@ -169,6 +169,11 @@ impl RenderPipeline {
         self.get_window_canvas_mut().clear();
         self.get_window_canvas_mut().present();
 
+        unsafe {
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+        }
+
         let mut delta = Duration::new(0,0);
 
         loop {

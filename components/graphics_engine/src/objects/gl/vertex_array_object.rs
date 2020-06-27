@@ -55,7 +55,7 @@ impl VertexArrayObject {
 
             gl::VertexAttribPointer(1, 2,
                                     gl::FLOAT, gl::FALSE,
-                                    8*4,
+                                    5*4,
                                     offset as *const c_void);
             gl::EnableVertexAttribArray(1);
             //offset += 2 * 4;

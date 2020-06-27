@@ -37,7 +37,7 @@ unsafe impl Sync for PxlGame {}
 
 impl PxlGame {
     pub fn new() -> PxlGame {
-        let asset_pipeline = AssetPipeline::new();
+        let asset_pipeline = AssetPipeline::new("assets-*.pxl");
         let asset_browser = AssetBrowser::new(&asset_pipeline);
 
         PxlGame {
@@ -99,6 +99,8 @@ impl PxlGame {
 
         self.render_pipeline.register_renderer(
             |delta| GAME.lock().render(delta));
+
+        self.asset_browser.init(&self.audio_system);
     }
 
     pub fn run(&mut self) -> ! {

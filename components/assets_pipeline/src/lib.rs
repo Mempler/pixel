@@ -90,9 +90,9 @@ impl AssetPipeline {
         databases
     }
 
-    pub fn new() -> AssetPipeline {
+    pub fn new<S: AsRef<str>>(pattern: S) -> AssetPipeline {
         let asset_databases = glob(
-            "assets-*.pxl"
+            pattern
         ).unwrap();
 
         let mut databases = Vec::new();

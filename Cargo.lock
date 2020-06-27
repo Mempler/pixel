@@ -538,7 +538,10 @@ name = "imgui_debug_utils"
 version = "0.1.0"
 dependencies = [
  "assets_pipeline",
+ "audio_engine",
  "bytesize",
+ "graphics_engine",
+ "image",
  "imgui",
  "log 0.4.8",
 ]

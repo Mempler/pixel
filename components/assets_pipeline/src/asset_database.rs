@@ -34,7 +34,7 @@ pub enum AssetDatabaseError {
 }
 
 #[repr(u8)]
-#[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub enum AssetEntryType {
     Unknown = 0,
 

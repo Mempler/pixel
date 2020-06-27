@@ -16,7 +16,7 @@ pub fn main() {
     let databases = AssetPipeline::compile_folder(asset_dir);
 
     let mut i = 0;
-    for database in databases {
+    for mut database in databases {
         let bytes = database.to_bytes().unwrap();
 
         let mut file = std::fs::File::create(format!("./assets-{:04}.pxl", i)).unwrap();

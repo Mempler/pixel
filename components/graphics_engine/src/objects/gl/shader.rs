@@ -4,6 +4,42 @@ pub struct Shader {
     program: u32,
 }
 
+const SHADER_ERR_SRC_FRAG: &str = "
+#version 110
+
+varying vec2 TexPos;
+
+// Yoinked from: https://github.com/mattdesl/glsl-checker
+
+float checker(vec2 uv, float repeats)
+{
+  float cx = floor(repeats * uv.x);
+  float cy = floor(repeats * uv.y);
+  float result = mod(cx + cy, 2.0);
+
+  return sign(result);
+}
+
+void main()
+{
+    gl_FragColor = mix(vec4(1.0, 0.0, 1.0, 1.0), vec4(0.0, 0.0, 0.0, 1.0), checker(TexPos.xy, 15.0));
+}
+";
+
+const SHADER_ERR_SRC_VERT: &str = "
+#version 110
+attribute vec3 iPos;
+attribute vec2 iTexPos;
+
+varying vec2 TexPos;
+
+void main()
+{
+    gl_Position = vec4( iPos.xyz, 1.0 );
+    TexPos = iTexPos;
+}
+";
+
 impl Shader {
     pub fn new<S: AsRef<str>>(frag: S, vert: S) -> Option<Shader> {
         let program;
@@ -24,17 +60,17 @@ impl Shader {
 
             // Compile our shader
             gl::CompileShader(vert_shader);
-            if let Some(_val) = Shader::check_compilation("vert", vert_shader) {
+            if let Some(val) = Shader::check_compilation("vert", vert_shader) {
                 gl::DeleteProgram(program);
 
-                return None;
+                return Some(val);
             }
 
             gl::CompileShader(frag_shader);
-            if let Some(_val) = Shader::check_compilation("frag", frag_shader) {
+            if let Some(val) = Shader::check_compilation("frag", frag_shader) {
                 gl::DeleteProgram(program);
 
-                return None;
+                return Some(val);
             }
 
             // Attach our shader to our Program
@@ -57,7 +93,7 @@ impl Shader {
 
     // If error occurs, it'll get printed out and a purple error shader will be returned
     // TODO: actually return the error shader
-    unsafe fn check_compilation<S: AsRef<str>>(name: S, shader: u32) -> Option<()> {
+    unsafe fn check_compilation<S: AsRef<str>>(name: S, shader: u32) -> Option<Shader> {
         let mut is_compiled = 0;
         gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut is_compiled);
         let is_compiled = is_compiled != 0;
@@ -78,7 +114,7 @@ impl Shader {
 
             gl::DeleteShader(shader); // Don't leak the shader.
 
-            return Some(());
+            return Shader::new(SHADER_ERR_SRC_FRAG, SHADER_ERR_SRC_VERT)
         }
 
         None

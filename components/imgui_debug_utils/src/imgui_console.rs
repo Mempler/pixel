@@ -55,8 +55,6 @@ impl ImGuiConsole {
                     sys::ImGuiWindowFlags_AlwaysAutoResize as i32
                 );
 
-
-
                 for log in &LOGGER.log {
                     let c_string = CString::new(log.1.as_str()).unwrap();
                     let log_str = ImStr::from_cstr_unchecked(c_string.as_c_str());
@@ -69,11 +67,13 @@ impl ImGuiConsole {
                         Level::Warn =>  [0.972, 0.929, 0.607, 1.0]
                     };
 
+                    ui.push_text_wrap_pos(0.0);
+
                     ui.text_colored(
                         text_colour,
                         log_str
                     );
-
+                    
                     if ui.scroll_max_y() <= ui.scroll_y() {
                         ui.set_scroll_y(ui.scroll_max_y());
                     }

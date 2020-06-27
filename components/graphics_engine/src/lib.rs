@@ -13,6 +13,9 @@ mod drawable;
 #[cfg(build = "debug")]
 pub mod imgui_wrapper;
 
+#[cfg(build = "debug")]
+pub mod imgui_ext;
+
 pub mod objects;
 
 pub use render_pipeline::RenderPipeline;

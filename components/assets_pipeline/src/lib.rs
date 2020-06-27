@@ -4,10 +4,11 @@ use std::path::Path;
 
 use globwalk::glob;
 pub use asset_database::*;
+use std::collections::HashMap;
 
 // TODO: implement a cache system && search for assets through databases
 pub struct AssetPipeline {
-    databases: Vec<AssetDatabase> // TODO: unload unused databases
+    databases: HashMap<String, AssetDatabase> // TODO: unload unused databases
 }
 
 impl AssetPipeline {
@@ -43,19 +44,7 @@ impl AssetPipeline {
                 img.into_rgba()
             );
 
-            if asset_entry.data.len() >= MAX_SIZE {
-                panic!("{} is too large! > 128 MB", name.to_str().unwrap()); // just crash at this point.
-            }
-
-            let last_db = databases.last_mut().unwrap();
-            if last_db.does_fit(&asset_entry) { // Make sure our entry fits
-                last_db.push_entry(asset_entry).unwrap();
-            } else { // Otherwise create a new db, if it still doesn't fit then we're fucked.
-                databases.push(AssetDatabase::new());
-
-                let last_db = databases.last_mut().unwrap();
-                last_db.push_entry(asset_entry).unwrap();
-            }
+            AssetPipeline::check_or_insert(&mut databases, asset_entry);
         }
 
         // TODO: implement
@@ -72,22 +61,26 @@ impl AssetPipeline {
                 data
             );
 
-            if asset_entry.data.len() >= MAX_SIZE {
-                panic!("{} is too large! > 128 MB", name.to_str().unwrap()); // just crash at this point.
-            }
-
-            let last_db = databases.last_mut().unwrap();
-            if last_db.does_fit(&asset_entry) { // Make sure our entry fits
-                last_db.push_entry(asset_entry).unwrap();
-            } else { // Otherwise create a new db, if it still doesn't fit then we're fucked.
-                databases.push(AssetDatabase::new());
-
-                let last_db = databases.last_mut().unwrap();
-                last_db.push_entry(asset_entry).unwrap();
-            }
+            AssetPipeline::check_or_insert(&mut databases, asset_entry);
         }
 
         databases
+    }
+
+    fn check_or_insert(databases: &mut Vec<AssetDatabase>, entry: AssetEntry) {
+        if entry.data.len() >= MAX_SIZE {
+            panic!("{} is too large! > 128 MB", entry.key()); // just crash at this point.
+        }
+
+        let last_db = databases.last_mut().unwrap();
+        if last_db.does_fit(&entry) { // Make sure our entry fits
+            last_db.push_entry(entry).unwrap();
+        } else { // Otherwise create a new db, if it still doesn't fit then we're fucked.
+            databases.push(AssetDatabase::new());
+
+            let last_db = databases.last_mut().unwrap();
+            last_db.push_entry(entry).unwrap();
+        }
     }
 
     pub fn new<S: AsRef<str>>(pattern: S) -> AssetPipeline {
@@ -95,7 +88,7 @@ impl AssetPipeline {
             pattern
         ).unwrap();
 
-        let mut databases = Vec::new();
+        let mut databases = HashMap::new();
 
         for asset_database in asset_databases {
             let instant = std::time::Instant::now();
@@ -108,7 +101,7 @@ impl AssetPipeline {
 
             log::info!("------- Done! took {:#?}", instant.elapsed());
 
-            databases.push(db);
+            databases.insert(path.file_name().to_str().unwrap().to_string(), db);
         }
 
         AssetPipeline {
@@ -118,7 +111,7 @@ impl AssetPipeline {
 
     pub fn search<S: AsRef<str>>(&self, key: S) -> Option<AssetEntry> {
         for db in &self.databases {
-            if let Some(entry) = db.get_entry(key.as_ref().to_string()) {
+            if let Some(entry) = db.1.get_entry(key.as_ref().to_string()) {
                 return Some(entry);
             }
         }
@@ -126,15 +119,17 @@ impl AssetPipeline {
         None
     }
 
-    pub fn all_entries(&self) -> Vec<AssetEntry> {
-        let mut entries = vec![];
+    pub fn all_databases(&self) -> HashMap<String, Vec<AssetEntry>> {
+        let mut entries_r = HashMap::new();
 
         for database in &self.databases {
-            for entry in database.iter() {
+            let mut entries = vec![];
+            for entry in database.1.iter() {
                 entries.push(entry.clone());
             }
+            entries_r.insert(database.0.clone(), entries);
         }
 
-        entries
+        entries_r
     }
 }

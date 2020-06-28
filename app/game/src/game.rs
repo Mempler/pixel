@@ -15,7 +15,7 @@ use graphics_engine::objects::Sprite;
 
 lazy_static! {
     pub static ref GAME: Arc<Mutex<PxlGame>> = {
-        ImGuiConsole::init().unwrap();
+        //ImGuiConsole::init().unwrap();
 
         Arc::new(Mutex::new(PxlGame::new()))
     };
@@ -37,13 +37,25 @@ unsafe impl Sync for PxlGame {}
 
 impl PxlGame {
     pub fn new() -> PxlGame {
+        log::trace!("Create Asset Pipeline");
         let asset_pipeline = AssetPipeline::new("assets-*.pxl");
+
+        log::trace!("Create Asset Browser");
         let asset_browser = AssetBrowser::new(&asset_pipeline);
 
+        log::trace!("Create Render Pipeline");
+        let render_pipeline = RenderPipeline::new("Project Pixel", 800, 600);
+
+        log::trace!("Create Audio System");
+        let audio_system = AudioSystem::new();
+
+        log::trace!("Create Event Pipeline");
+        let event_pipeline = EventPipeline::new();
+
         PxlGame {
-            render_pipeline: RenderPipeline::new("Project Pixel", 800, 600),
-            audio_system: AudioSystem::new(),
-            event_pipeline: EventPipeline::new(),
+            render_pipeline,
+            audio_system,
+            event_pipeline,
             asset_pipeline,
             asset_browser
         }
@@ -79,6 +91,7 @@ impl PxlGame {
 
 
     pub fn init(&mut self) {
+        log::trace!("Discord RPC Init");
         std::thread::spawn(move || { // This would freeze if called too many times!
             // Fancy discord RPC
             let mut drpc = Client::new(724417347938549840);
@@ -94,12 +107,15 @@ impl PxlGame {
             }).expect("Failed to set activity");
         });
 
+        log::trace!("Event Pipeline Init");
         // Register an base event handler to at least handle (QUIT)
         self.event_pipeline.register_handler(|ev| GAME.lock().handle_event(ev));
 
+        log::trace!("Render Pipeline Init");
         self.render_pipeline.register_renderer(
             |delta| GAME.lock().render(delta));
 
+        log::trace!("Asset Browser Init");
         self.asset_browser.init(&self.audio_system);
     }
 
@@ -143,26 +159,23 @@ impl PxlGame {
 
     fn update(&mut self, _delta: &Duration) {
         #[cfg(build = "debug")]
-        {
-            let ui = self.render_pipeline.get_imgui_ui().unwrap();
+            {
+                let ui = self.render_pipeline.get_imgui_ui().unwrap();
 
-            ImGuiConsole::update(ui);
-            self.asset_browser.update(ui);
+                ImGuiConsole::update(ui);
+                self.asset_browser.update(ui);
 
-            ui.show_demo_window(&mut true);
-        }
+                ui.show_demo_window(&mut true);
+            }
     }
 
     // Renderer for rendering children
     fn render(&mut self, delta: &Duration) {
+        /*
         let sprite = Sprite::new(self.asset_pipeline.search("World").unwrap().into_texture());
 
         sprite.update(delta);
         sprite.render(self.render_pipeline(), delta);
+         */
     }
-}
-
-fn main() {
-    GAME.lock().init();
-    GAME.lock().run();
 }

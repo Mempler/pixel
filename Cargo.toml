@@ -1,6 +1,8 @@
 [workspace]
 members = [
-    "app",
+    "app/game",
+    "app/desktop",
+    "app/android",
 
     "components/audio_engine",
     "components/graphics_engine",

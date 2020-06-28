@@ -9,6 +9,20 @@ mod platform {
     #[link(name = "fmod")] extern{}
 }
 
+#[cfg(target_os = "android")]
+mod platform {
+    #[cfg(target_arch="aarch64")]
+    #[link(name = "fmod")] extern{}
+    #[cfg(target_arch="armv7")]
+    #[link(name = "fmod")] extern{}
+    #[cfg(target_arch="i686")]
+    #[link(name = "fmod")] extern{}
+    #[cfg(target_arch="x86")]
+    #[link(name = "fmod")] extern{}
+    #[cfg(target_arch="x86_64")]
+    #[link(name = "fmod")] extern{}
+}
+
 #[cfg(target_os = "windows")]
 mod platform {
     #[cfg(target_arch="x86")]

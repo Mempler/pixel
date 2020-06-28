@@ -56,28 +56,49 @@ impl RenderPipeline {
 
         let gl_attr = video.gl_attr();
 
-        // Set Debug mode
-        gl_attr.set_context_flags().debug().set();
-
         // Set OpenGL Version
-        gl_attr.set_context_profile(GLProfile::Core);
-        gl_attr.set_context_version(3, 2);
 
-        // enable Anti Aliasing
-        gl_attr.set_multisample_buffers(1);
-        gl_attr.set_multisample_samples(4);
+        #[cfg(target_os="android")]
+            {
+                gl_attr.set_context_profile(GLProfile::GLES);
+                gl_attr.set_context_version(2, 0);
+            }
+
+
+        #[cfg(not(target_os="android"))]
+            {
+                // Set Debug mode
+                gl_attr.set_context_flags().debug().set();
+
+                gl_attr.set_context_profile(GLProfile::Core);
+                gl_attr.set_context_version(3, 3);
+
+                // enable Anti Aliasing
+                gl_attr.set_multisample_buffers(1);
+                gl_attr.set_multisample_samples(4);
+            }
+
 
 
         log::info!("Initialize window with OpenGL");
 
         // Create a window at *new() time*
-        let window = video.window(title, width, height)
+        let window = match video.window(title, width, height)
             .position_centered()
             .opengl()
-            .hidden()
             .resizable()
-            .build()
-            .unwrap();
+            .build() {
+
+            Ok(wnd) => wnd,
+            Err(e) => {
+                log::error!("{}", e);
+
+                panic!(e)
+            }
+
+        };
+
+        log::info!("Created Window");
 
         let canvas = window
             .into_canvas()
@@ -290,7 +311,7 @@ impl RenderPipeline {
 
     fn find_sdl_gl_driver() -> Option<u32> {
         for (index, item) in sdl2::render::drivers().enumerate() {
-            if item.name == "opengl" {
+            if item.name == "opengl" || item.name == "opengles2" {
                 return Some(index as u32);
             }
         }

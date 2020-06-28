@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "pixel_game"
 version = "0.1.0"
 authors = ["Robin A. P. <me@mempler.de>"]
 edition = "2018"
@@ -8,11 +8,11 @@ edition = "2018"
 
 [dependencies]
 # NOTE: we have to include the fmod logo in our final game as splash screen!
-audio_engine = { path = "../components/audio_engine" }
-graphics_engine = { path = "../components/graphics_engine" }
-event_pipeline = { path = "../components/event_pipeline" }
-assets_pipeline = { path = "../components/assets_pipeline" }
-imgui_debug_utils = { path = "../components/imgui_debug_utils" }
+audio_engine = { path = "../../components/audio_engine" }
+graphics_engine = { path = "../../components/graphics_engine" }
+event_pipeline = { path = "../../components/event_pipeline" }
+assets_pipeline = { path = "../../components/assets_pipeline" }
+imgui_debug_utils = { path = "../../components/imgui_debug_utils" }
 
 discord-rpc-client = "0.3.0"
 lazy_static = "1.4.0"
@@ -23,4 +23,4 @@ log = "0.4.8"
 glam = "0.8.7"
 
 [build-dependencies]
-assets_pipeline = { path = "../components/assets_pipeline" }
+assets_pipeline = { path = "../../components/assets_pipeline" }

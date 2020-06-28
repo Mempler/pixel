@@ -5,6 +5,7 @@ use gl_generator::{Registry, Api, Profile, Fallbacks, GlobalGenerator};
 use std::fs::File;
 
 pub fn main() {
+    let target = env::var("TARGET").unwrap();
     if let Ok(profile) = env::var("PROFILE") {
         println!(r"cargo:rustc-cfg=build={:?}", profile);
     }
@@ -13,12 +14,18 @@ pub fn main() {
     let dest = env::var("OUT_DIR").unwrap();
     let mut file = File::create(&Path::new(&dest).join("bindings.rs")).unwrap();
 
-    Registry::new(Api::Gl, (3, 3), Profile::Core, Fallbacks::All, [])
-        .write_bindings(GlobalGenerator, &mut file)
-        .unwrap();
+    if !target.contains("linux-android") {
+        Registry::new(Api::Gl, (3, 3), Profile::Core, Fallbacks::All, [])
+            .write_bindings(GlobalGenerator, &mut file)
+            .unwrap();
+    } else {
+        Registry::new(Api::Gles1, (2, 0), Profile::Core, Fallbacks::All, [])
+            .write_bindings(GlobalGenerator, &mut file)
+            .unwrap();
+    }
+
 
     // DLLs
-    let target = env::var("TARGET").unwrap();
     if target.contains("pc-windows") {
         let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
         let mut lib_dir = manifest_dir.clone();
@@ -66,6 +73,33 @@ pub fn main() {
                 }
             }
         }
+    }
+
+    if target.contains("linux-android") {
+        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        let mut lib_dir = manifest_dir.clone();
+
+        lib_dir.push("android");
+        lib_dir.push("so");
+
+        if target == "aarch64-linux-android" {
+            lib_dir.push("arm64-v8a");
+        }
+
+        if target == "armv7-linux-androideabi" {
+            lib_dir.push("armeabi-v7a");
+        }
+
+        if target == "i686-linux-android" {
+            lib_dir.push("x86");
+        }
+
+        if target == "x86_64-linux-android" {
+            lib_dir.push("x86_64");
+        }
+
+        println!("cargo:rustc-link-search=all={}", lib_dir.display());
     }
 }
 

@@ -53,8 +53,8 @@ impl Shader {
             let vert_len = vert.as_ref().len() as i32;
             let frag_len = frag.as_ref().len() as i32;
 
-            let vert_ptr = vert.as_ref().as_ptr() as *const i8;
-            let frag_ptr = frag.as_ref().as_ptr() as *const i8;
+            let vert_ptr = vert.as_ref().as_ptr() as *const u8;
+            let frag_ptr = frag.as_ref().as_ptr() as *const u8;
 
             // Set our shader source
             gl::ShaderSource(vert_shader, 1, &vert_ptr, &vert_len);
@@ -107,9 +107,9 @@ impl Shader {
             // Create a CStr
             let mut error_log = vec![0i8; max_len as usize];
             gl::GetShaderInfoLog(shader, max_len, &mut max_len,
-                                 error_log.as_mut_ptr());
+                                 error_log.as_mut_ptr() as _);
 
-            let c_str = CStr::from_ptr(error_log.as_ptr());
+            let c_str = CStr::from_ptr(error_log.as_ptr() as _);
 
             log::error!("Failed to compile {} shader {}", name.as_ref(),
                 CString::from(c_str).to_str().unwrap());

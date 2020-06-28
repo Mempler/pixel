@@ -92,6 +92,11 @@ impl AssetPipeline {
 
         for asset_database in asset_databases {
             let instant = std::time::Instant::now();
+            if asset_database.is_err() {
+                log::error!("{}", asset_database.unwrap_err());
+                continue;
+            }
+
             let path = asset_database.unwrap();
 
             log::info!("------- Loading {}", path.file_name().to_str().unwrap());

@@ -73,7 +73,7 @@ impl AudioSystem {
             sound_info.cbsize = 224;
             sound_info.length = buf.len() as u32;
 
-            let r = FMOD_System_CreateSound(self.sys, buf.as_ptr() as *const i8,
+            let r = FMOD_System_CreateSound(self.sys, buf.as_ptr() as _,
                                             FMOD_OPENMEMORY,
                                             sound_info.as_mut(),
                                             &mut audio_ptr);

@@ -35,8 +35,10 @@ impl Sprite {
         vao.bind_to(&vbo, &ebo);
 
         let shader = Shader::new(
-            "
-                #version 330 core
+            "\
+                #version 320 es
+                precision mediump float;
+
                 out vec4 FragColor;
 
                 in vec2 TexPos;
@@ -49,8 +51,9 @@ impl Sprite {
                 }
             ",
 
-            "
-                #version 330 core
+            "\
+                #version 320 es
+
                 layout (location = 0) in vec3 iPos;
                 layout (location = 1) in vec2 iTexPos;
 

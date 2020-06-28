@@ -114,6 +114,13 @@ impl AssetPipeline {
         }
     }
 
+    pub fn attach_database_from_memory<S: AsRef<str>>(&mut self, nm: S, mem: &[u8]) {
+        let nm = nm.as_ref();
+        let db = AssetDatabase::from_bytes(mem.to_vec()).unwrap();
+
+        self.databases.insert(nm.to_string(), db);
+    }
+
     pub fn search<S: AsRef<str>>(&self, key: S) -> Option<AssetEntry> {
         for db in &self.databases {
             if let Some(entry) = db.1.get_entry(key.as_ref().to_string()) {

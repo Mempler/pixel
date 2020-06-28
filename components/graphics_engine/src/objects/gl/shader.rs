@@ -4,8 +4,8 @@ pub struct Shader {
     program: u32,
 }
 
-const SHADER_ERR_SRC_FRAG: &str = "
-#version 110
+const SHADER_ERR_SRC_FRAG: &str = "\
+#version 320 es
 
 varying vec2 TexPos;
 
@@ -26,8 +26,9 @@ void main()
 }
 ";
 
-const SHADER_ERR_SRC_VERT: &str = "
-#version 110
+const SHADER_ERR_SRC_VERT: &str = "\
+#version 320 es
+
 attribute vec3 iPos;
 attribute vec2 iTexPos;
 

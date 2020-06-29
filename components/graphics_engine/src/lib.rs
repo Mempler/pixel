@@ -1,5 +1,13 @@
 #![feature(stmt_expr_attributes)]
 
+pub extern crate nalgebra_glm as glm;
+
+pub mod gl {
+    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+}
+
+pub mod gl_wrap;
+
 mod render_pipeline;
 
 #[cfg(build = "debug")]

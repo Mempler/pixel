@@ -1,10 +1,21 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
+
+use gl_generator::{Registry, Api, Profile, Fallbacks, GlobalGenerator};
+use std::fs::File;
 
 pub fn main() {
     if let Ok(profile) = env::var("PROFILE") {
         println!(r"cargo:rustc-cfg=build={:?}", profile);
     }
+
+    // Generate OpenGL
+    let dest = env::var("OUT_DIR").unwrap();
+    let mut file = File::create(&Path::new(&dest).join("bindings.rs")).unwrap();
+
+    Registry::new(Api::Gl, (3, 3), Profile::Core, Fallbacks::All, [])
+        .write_bindings(GlobalGenerator, &mut file)
+        .unwrap();
 
     // DLLs
     let target = env::var("TARGET").unwrap();

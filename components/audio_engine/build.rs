@@ -99,5 +99,32 @@ pub fn main() {
             }
         }
     }
+
+    if target.contains("linux-android") {
+        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        let mut lib_dir = manifest_dir.clone();
+
+        lib_dir.push("android");
+        lib_dir.push("so");
+
+        if target == "aarch64-linux-android" {
+            lib_dir.push("arm64-v8a");
+        }
+
+        if target == "armv7-linux-androideabi" {
+            lib_dir.push("armeabi-v7a");
+        }
+
+        if target == "i686-linux-android" {
+            lib_dir.push("x86");
+        }
+
+        if target == "x86_64-linux-android" {
+            lib_dir.push("x86_64");
+        }
+
+        println!("cargo:rustc-link-search=all={}", lib_dir.display());
+    }
 }
 

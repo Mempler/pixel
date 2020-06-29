@@ -66,10 +66,20 @@ impl Audio {
         #[cfg(feature = "audio_fmod")]
         unsafe {
             if self.channel.is_null() {
-                return; // do nothing
+                self.play();
+                return;
             }
 
-            FMOD_Channel_SetPaused(self.channel, 1);
+            let mut should_pause = 0;
+            FMOD_Channel_GetPaused(self.channel, &mut should_pause);
+
+            if should_pause > 0 {
+                should_pause = 0;
+            } else {
+                should_pause = 1;
+            }
+
+            FMOD_Channel_SetPaused(self.channel, should_pause);
         }
     }
 

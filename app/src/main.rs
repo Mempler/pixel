@@ -36,7 +36,7 @@ unsafe impl Sync for PxlGame {}
 
 impl PxlGame {
     pub fn new() -> PxlGame {
-        let asset_pipeline = AssetPipeline::new();
+        let asset_pipeline = AssetPipeline::new("assets-*.pxl");
         let asset_browser = AssetBrowser::new(&asset_pipeline);
 
         PxlGame {
@@ -98,6 +98,8 @@ impl PxlGame {
 
         self.render_pipeline.register_renderer(
             |delta| GAME.lock().render(delta));
+
+        self.asset_browser.init(&self.audio_system);
     }
 
     pub fn run(&mut self) -> ! {
@@ -106,14 +108,6 @@ impl PxlGame {
             // it wont really matter as everything else is being locked though.
             GAME.force_unlock();
         }
-
-        /* TODO: use that as theme song for our game.
-        let mut theme = self.asset_pipeline.search("One-eyed Maestro")
-            .unwrap()
-            .into_audio(self.audio_system());
-
-        theme.play();
-         */
 
         // Input is a single threaded update loop.
         // Update and Render is being rendered on different threads

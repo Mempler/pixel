@@ -2,7 +2,7 @@ use sdl2::{Sdl, VideoSubsystem};
 
 use std::time::{Duration, Instant};
 use std::thread::sleep;
-use sdl2::video::Window;
+use sdl2::video::{Window, GLProfile};
 use sdl2::render::WindowCanvas;
 use event_pipeline::EventPipeline;
 #[cfg(build = "debug")]
@@ -11,6 +11,8 @@ use crate::imgui_wrapper::ImGui;
 use imgui::Ui;
 #[cfg(build = "debug")]
 use std::ffi::c_void;
+
+use crate::gl;
 
 // each project has one pipeline.
 // multiple can cause bugs.
@@ -54,6 +56,20 @@ impl RenderPipeline {
         log::info!("Initialize SDL2 Video");
         let video = sdl.video().unwrap();
 
+        let gl_attr = video.gl_attr();
+
+        // Set Debug mode
+        gl_attr.set_context_flags().debug().set();
+
+        // Set OpenGL Version
+        gl_attr.set_context_profile(GLProfile::Core);
+        gl_attr.set_context_version(3, 2);
+
+        // enable Anti Aliasing
+        gl_attr.set_multisample_buffers(1);
+        gl_attr.set_multisample_samples(4);
+
+
         log::info!("Initialize window with OpenGL");
 
         // Create a window at *new() time*
@@ -61,6 +77,7 @@ impl RenderPipeline {
             .position_centered()
             .opengl()
             .hidden()
+            .resizable()
             .build()
             .unwrap();
 
@@ -69,17 +86,14 @@ impl RenderPipeline {
             .index(RenderPipeline::find_sdl_gl_driver().unwrap())
             .build()
             .unwrap();
-        
-        log::info!("SDL2 canvas created");
 
+        log::info!("SDL2 canvas created");
 
         gl::load_with(|s| video.gl_get_proc_address(s) as _); // load GL context
 
         canvas.window().gl_set_context_to_current().unwrap();
 
-        let attr = video.gl_attr();
-        let ogl_version = attr.context_version();
-
+        let ogl_version = gl_attr.context_version();
         log::info!("OpenGL Version: {}.{}", ogl_version.0, ogl_version.1);
         log::info!("OpenGL Extensions: "); // TODO: implement
 
@@ -143,9 +157,9 @@ impl RenderPipeline {
             F: Fn(&Duration, &mut RenderPipeline) -> bool // true = Exit loop, false = continue
     {
         #[cfg(build = "debug")]
-        {
-            self.imgui = Some(ImGui::new(self.get_sdl_video(), self.get_window()));
-        }
+            {
+                self.imgui = Some(ImGui::new(self.get_sdl_video(), self.get_window()));
+            }
 
         let mut event_pump = self.sdl.event_pump().unwrap();
 
@@ -156,20 +170,41 @@ impl RenderPipeline {
         self.get_window_canvas_mut().clear();
         self.get_window_canvas_mut().present();
 
+        unsafe {
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+        }
+
         let mut delta = Duration::new(0,0);
 
         loop {
             let frame_start = Instant::now();
 
             #[cfg(build = "debug")]
-            let mut ui_box: Box<Ui>;
+                let mut ui_box: Box<Ui>;
 
             { // Update Frame
                 // TODO: somehow pass this down the line
                 let events = event_pump.poll_iter();
                 for event in events {
+                    match &event {
+                        sdl2::event::Event::Window {
+                            timestamp: _,
+                            window_id: _,
+                            win_event
+                        } => {
+                            match win_event {
+                                sdl2::event::WindowEvent::Resized(w, h) => unsafe {
+                                    gl::Viewport(0, 0, *w, *h); // Set the gl viewport for -1.0 to 1.0 coords
+                                }
+                                _ => { }
+                            }
+                        }
+                        _ => {}
+                    }
+
                     #[cfg(build = "debug")]
-                    unsafe { // ya dirty hacker Mempler is here! lets bypass some of rusts safety features
+                        unsafe { // ya dirty hacker Mempler is here! lets bypass some of rusts safety features
                         let imgui = self.imgui.as_mut().unwrap().imgui();
                         let imgui_sdl2 = self.imgui.as_mut().unwrap().imgui_sdl2();
                         if (*imgui_sdl2).ignore_event(&event) {
@@ -181,7 +216,7 @@ impl RenderPipeline {
                 }
 
                 #[cfg(build = "debug")]
-                unsafe {
+                    unsafe {
                     let render = self as *const RenderPipeline;
                     let imgui = self.imgui.as_mut().unwrap() as *mut ImGui;
 
@@ -209,10 +244,14 @@ impl RenderPipeline {
                     gl::Clear(gl::COLOR_BUFFER_BIT);
                 }
 
+                for render_callback in &self.render_callbacks {
+                    render_callback(&delta);
+                }
+
                 // NOTICE: this is so bad... too bad!
                 // This is non production code anyway ¯\_(ツ)_/¯
                 #[cfg(build = "debug")]
-                unsafe {
+                    unsafe {
                     let render = self as *const RenderPipeline;
 
                     let imgui = self.imgui.as_mut().unwrap();
@@ -224,10 +263,6 @@ impl RenderPipeline {
                     (*imgui_renderer).render(*ui_box);
 
                     self.imgui_frame = None;
-                }
-
-                for render_callback in &self.render_callbacks {
-                    render_callback(&delta);
                 }
 
                 self.get_window_canvas_mut().present();

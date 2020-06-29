@@ -1,6 +1,7 @@
 use log::*;
 use imgui::*;
 use std::ffi::CString;
+use graphics_engine::imgui_ext::UiChildExt;
 
 static mut LOGGER: ImGuiConsole = ImGuiConsole {
     log: vec![]
@@ -45,41 +46,36 @@ impl ImGuiConsole {
                 ui.separator();
 
                 let window_size = ui.window_size();
-                sys::igBeginChild(
-                    im_str!("console-content").as_ptr(),
-                    sys::ImVec2 {
-                        x: window_size[0] - 10.0,
-                        y: window_size[1] - 65.0
-                    },
-                    false,
-                    sys::ImGuiWindowFlags_AlwaysAutoResize as i32
-                );
+                ui.child(
+                    im_str!("console-content"),
+                    [window_size[0] - 10.0, window_size[1] - 65.0],
+                    false, WindowFlags::ALWAYS_AUTO_RESIZE,
+                    || {
+                        for log in &LOGGER.log {
+                            let c_string = CString::new(log.1.as_str()).unwrap();
+                            let log_str = ImStr::from_cstr_unchecked(c_string.as_c_str());
 
+                            let text_colour = match log.0 {
+                                Level::Debug => [0.941, 0.607, 0.972, 1.0],
+                                Level::Error => [1.0,   0.560, 0.654, 1.0],
+                                Level::Info =>  [0.607, 0.788, 0.972, 1.0],
+                                Level::Trace => [0.650, 0.650, 0.650, 1.0],
+                                Level::Warn =>  [0.972, 0.929, 0.607, 1.0]
+                            };
 
+                            ui.push_text_wrap_pos(0.0);
 
-                for log in &LOGGER.log {
-                    let c_string = CString::new(log.1.as_str()).unwrap();
-                    let log_str = ImStr::from_cstr_unchecked(c_string.as_c_str());
+                            ui.text_colored(
+                                text_colour,
+                                log_str
+                            );
 
-                    let text_colour = match log.0 {
-                        Level::Debug => [0.941, 0.607, 0.972, 1.0],
-                        Level::Error => [1.0,   0.560, 0.654, 1.0],
-                        Level::Info =>  [0.607, 0.788, 0.972, 1.0],
-                        Level::Trace => [0.650, 0.650, 0.650, 1.0],
-                        Level::Warn =>  [0.972, 0.929, 0.607, 1.0]
-                    };
-
-                    ui.text_colored(
-                        text_colour,
-                        log_str
-                    );
-
-                    if ui.scroll_max_y() <= ui.scroll_y() {
-                        ui.set_scroll_y(ui.scroll_max_y());
+                            if ui.scroll_max_y() <= ui.scroll_y() {
+                                ui.set_scroll_y(ui.scroll_max_y());
+                            }
+                        }
                     }
-                }
-
-                sys::igEndChild();
+                );
             });
     }
 

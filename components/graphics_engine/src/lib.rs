@@ -12,7 +12,6 @@ mod render_pipeline;
 
 #[cfg(build = "debug")]
 pub mod imgui_wrapper;
-#[cfg(build = "debug")]
 pub mod imgui_ext;
 
 pub use render_pipeline::RenderPipeline;

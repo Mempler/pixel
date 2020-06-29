@@ -1,5 +1,7 @@
 use std::ffi::{CStr, CString};
 
+use crate::gl;
+
 pub struct Shader {
     program: u32,
 }

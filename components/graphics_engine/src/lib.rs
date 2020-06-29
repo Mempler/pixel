@@ -2,7 +2,7 @@
 
 pub extern crate nalgebra_glm as glm;
 
-mod gl {
+pub mod gl {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 

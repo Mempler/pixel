@@ -2,6 +2,8 @@
 
 use std::ffi::c_void;
 
+use crate::gl;
+
 pub struct ElementArrayBuffer {
     gl_id: u32
 }

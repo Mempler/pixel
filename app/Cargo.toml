@@ -20,7 +20,5 @@ parking_lot = "0.11.0"
 
 log = "0.4.8"
 
-glam = "0.8.7"
-
 [build-dependencies]
 assets_pipeline = { path = "../components/assets_pipeline" }

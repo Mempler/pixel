@@ -7,22 +7,16 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sdl2 = { version="0.34.1", features = ["image"], default-features = false }
 event_pipeline = { path = "../event_pipeline" }
-gl = "0.14.0"
-parking_lot = "0.11.0"
+
+sdl2 = { version="0.34.1", default-features = false }
 log = "0.4.8"
-
-glfw = "0.38.0"
-
 image = "0.23.6"
-
 imgui = "0.4.0"
 imgui-sdl2 = "0.11.0"
 imgui-opengl-renderer = "0.8.0"
-
-nalgebra-glm = "0.7.0" # Math library
+nalgebra-glm = "0.7.0"
 
 [build-dependencies]
 globwalk = "0.8.0"
-gl_generator = "0.7.0"
+gl_generator = "0.14.0"

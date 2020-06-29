@@ -2,6 +2,8 @@
 
 use image::RgbaImage;
 
+use crate::gl;
+
 pub struct Texture2D {
     texture: u32,
 

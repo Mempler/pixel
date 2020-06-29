@@ -2,6 +2,8 @@
 
 use std::ffi::c_void;
 
+use crate::gl;
+
 pub struct VertexBuffer {
     gl_id: u32
 }

@@ -12,6 +12,8 @@ use imgui::Ui;
 #[cfg(build = "debug")]
 use std::ffi::c_void;
 
+use crate::gl;
+
 // each project has one pipeline.
 // multiple can cause bugs.
 // a pipeline is thread safe!
@@ -86,7 +88,6 @@ impl RenderPipeline {
             .unwrap();
 
         log::info!("SDL2 canvas created");
-
 
         gl::load_with(|s| video.gl_get_proc_address(s) as _); // load GL context
 

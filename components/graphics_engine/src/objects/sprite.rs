@@ -6,8 +6,11 @@ use crate::objects::gl::{VertexArrayObject, VertexBuffer, Shader, ElementArrayBu
 use crate::{Vertices, RenderPipeline};
 use std::ptr::null;
 
+use crate::gl;
+
 // a High level struct for drawing sprites to the screen
 // TODO: Spritebatch for increased performance by having hundreds of sprites
+#[allow(dead_code)] // TODO: remove
 pub struct Sprite {
     /*
     texture: Texture2D,
@@ -91,7 +94,7 @@ impl crate::Drawable for Sprite {
         self.shader.bind();
         self.vao.bind();
 
-        let mut proj = glm::ortho(
+        let proj = glm::ortho(
             -1.0, wnd_size.0 as f32,
             -1.0, wnd_size.1 as f32,
             -1.0, 1.0

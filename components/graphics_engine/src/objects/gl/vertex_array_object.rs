@@ -5,6 +5,8 @@ use std::ptr;
 use std::ffi::c_void;
 use crate::objects::gl::ElementArrayBuffer;
 
+use crate::gl;
+
 pub struct VertexArrayObject {
     gl_id: u32
 }

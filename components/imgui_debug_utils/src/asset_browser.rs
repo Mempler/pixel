@@ -22,10 +22,7 @@ pub struct AssetBrowser {
     textures: HashMap<AssetEntryType, Texture2D>,
 
     texture_cache: HashMap<String, Texture2D>,
-    audio_cache: HashMap<String, Audio>,
-
-    size0: f32,
-    size1: f32,
+    audio_cache: HashMap<String, Audio>
 }
 
 impl AssetBrowser {
@@ -35,10 +32,7 @@ impl AssetBrowser {
 
             textures: HashMap::new(),
             texture_cache: HashMap::new(),
-            audio_cache: HashMap::new(),
-
-            size0: 0.0,
-            size1: 0.0
+            audio_cache: HashMap::new()
         }
     }
 

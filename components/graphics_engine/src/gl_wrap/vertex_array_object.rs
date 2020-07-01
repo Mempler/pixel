@@ -47,19 +47,53 @@ impl VertexArrayObject {
         // 12 XYZ 8 TX TY
         unsafe { // Specify our data location
             let mut offset = 0;
+            // XYZ
             gl::VertexAttribPointer(0, 3, // TODO: do not hardcode all this. let the developer decide.
                                     gl::FLOAT, gl::FALSE,
-                                    5*4,
+                                    15*4,
                                     ptr::null());
             gl::EnableVertexAttribArray(0);
             offset += 3 * 4;
 
+            // Texture XY
             gl::VertexAttribPointer(1, 2,
                                     gl::FLOAT, gl::FALSE,
-                                    5*4,
+                                    15*4,
                                     offset as *const c_void);
             gl::EnableVertexAttribArray(1);
-            //offset += 2 * 4;
+            offset += 2 * 4;
+
+            // RGBA
+            gl::VertexAttribPointer(2, 4,
+                                    gl::FLOAT, gl::FALSE,
+                                    15*4,
+                                    offset as *const c_void);
+            gl::EnableVertexAttribArray(2);
+            offset += 4 * 4;
+
+            // Flip XY
+            gl::VertexAttribPointer(3, 2,
+                                    gl::FLOAT, gl::FALSE,
+                                    15*4,
+                                    offset as *const c_void);
+            gl::EnableVertexAttribArray(3);
+            offset += 2 * 4;
+
+            // Texture Width, Height
+            gl::VertexAttribPointer(4, 2,
+                                    gl::FLOAT, gl::FALSE,
+                                    15*4,
+                                    offset as *const c_void);
+            gl::EnableVertexAttribArray(4);
+            offset += 2 * 4;
+
+            // Texture Offset XY
+            gl::VertexAttribPointer(5, 2,
+                                    gl::FLOAT, gl::FALSE,
+                                    15*4,
+                                    offset as *const c_void);
+            gl::EnableVertexAttribArray(5);
+            offset += 2 * 4;
         }
 
         self.unbind(); // unbind VAO

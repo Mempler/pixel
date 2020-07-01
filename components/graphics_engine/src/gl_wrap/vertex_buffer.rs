@@ -9,7 +9,7 @@ pub struct VertexBuffer {
 }
 
 impl VertexBuffer {
-    pub fn new(vertices: &[f32]) -> VertexBuffer {
+    pub fn new() -> VertexBuffer {
         let mut buff = VertexBuffer {
             gl_id: 0
         };
@@ -17,6 +17,7 @@ impl VertexBuffer {
         unsafe {
             gl::GenBuffers(1, &mut buff.gl_id);
 
+            /*
             // Bind so we can use our VBO
             buff.bind();
 
@@ -24,11 +25,12 @@ impl VertexBuffer {
             gl::BufferData(gl::ARRAY_BUFFER,
                            (vertices.len() * std::mem::size_of::<f32>()) as _,
                             &vertices[0] as *const f32 as *const c_void,
-                            gl::STATIC_DRAW
+                            gl::DYNAMIC_DRAW
             );
 
             // We dont need it anymore, lets unbind it for now! we can always rebind it later
             buff.unbind();
+            */
         }
 
         buff
@@ -36,6 +38,20 @@ impl VertexBuffer {
 
     pub fn id(&self) -> u32 {
         self.gl_id
+    }
+
+    pub fn update_data(&mut self, vertices: &[f32]) {
+        unsafe {
+            self.bind();
+
+            gl::BufferData(gl::ARRAY_BUFFER,
+                           (vertices.len() * std::mem::size_of::<f32>()) as _,
+                           &vertices[0] as *const f32 as *const c_void,
+                           gl::DYNAMIC_DRAW
+            );
+
+            self.unbind();
+        }
     }
 
     pub fn bind(&self) {

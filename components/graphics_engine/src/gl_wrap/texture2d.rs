@@ -4,6 +4,7 @@ use image::RgbaImage;
 
 use crate::gl;
 
+#[derive(Clone)]
 pub struct Texture2D {
     texture: u32,
 

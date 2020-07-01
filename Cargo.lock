@@ -371,6 +371,7 @@ dependencies = [
 name = "graphics_engine"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "event_pipeline",
  "gl_generator 0.14.0",
  "globwalk",

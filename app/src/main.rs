@@ -1,4 +1,4 @@
-use graphics_engine::RenderPipeline;
+use graphics_engine::{RenderPipeline, Drawable};
 use audio_engine::AudioSystem;
 use event_pipeline::{EventPipeline, Event};
 
@@ -11,6 +11,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use assets_pipeline::AssetPipeline;
 use imgui_debug_utils::{ImGuiConsole, AssetBrowser};
+use graphics_engine::objects::{SpriteBatch, Sprite};
+use graphics_engine::gl_wrap::Texture2D;
 
 lazy_static! {
     pub static ref GAME: Arc<Mutex<PxlGame>> = {
@@ -145,8 +147,20 @@ impl PxlGame {
     }
 
     // Renderer for rendering children
-    fn render(&mut self, _delta: &Duration) {
+    fn render(&mut self, delta: &Duration) {
+        // TODO: remove this:
+        {
+            let mut batch = SpriteBatch::new(&self.render_pipeline, None);
 
+            let sprite = Sprite::new(Texture2D::from(self.asset_pipeline
+                .search("World")
+                .unwrap()
+                .into_texture()));
+
+            batch.draw(&sprite);
+
+            batch.render(&self.render_pipeline, delta);
+        }
     }
 }
 

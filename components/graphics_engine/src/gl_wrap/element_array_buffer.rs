@@ -9,26 +9,13 @@ pub struct ElementArrayBuffer {
 }
 
 impl ElementArrayBuffer {
-    pub fn new(indices: &[i32]) -> ElementArrayBuffer {
+    pub fn new() -> ElementArrayBuffer {
         let mut buff = ElementArrayBuffer {
             gl_id: 0
         };
 
         unsafe {
             gl::GenBuffers(1, &mut buff.gl_id);
-
-            // Bind so we can use our VBO
-            buff.bind();
-
-            // Upload our vertices to our GPU
-            gl::BufferData(gl::ELEMENT_ARRAY_BUFFER,
-                           (indices.len() * std::mem::size_of::<i32>()) as _,
-                           &indices[0] as *const i32 as *const c_void,
-                           gl::STATIC_DRAW
-            );
-
-            // We dont need it anymore, lets unbind it for now! we can always rebind it later
-            buff.unbind();
         }
 
         buff
@@ -37,6 +24,21 @@ impl ElementArrayBuffer {
     pub fn id(&self) -> u32 {
         self.gl_id
     }
+
+    pub fn update_data(&mut self, indices: &[i32]) {
+        unsafe {
+            self.bind();
+
+            gl::BufferData(gl::ELEMENT_ARRAY_BUFFER,
+                           (indices.len() * std::mem::size_of::<i32>()) as _,
+                           &indices[0] as *const i32 as *const c_void,
+                           gl::STATIC_DRAW
+            );
+
+            self.unbind();
+        }
+    }
+
 
     pub fn bind(&self) {
         unsafe {
